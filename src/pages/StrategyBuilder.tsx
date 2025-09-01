@@ -31,8 +31,22 @@ const StrategyBuilder: React.FC = () => {
   }, [selectedComponent]);
 
   const handleNodeSelect = (nodeId: string | null) => {
+    console.log('StrategyBuilder handleNodeSelect called:', {
+      nodeId,
+      previousSelectedNodeId: selectedNodeId,
+      nodeExists: nodeId ? nodes.find(n => n.id === nodeId) !== undefined : false
+    });
     setSelectedNodeId(nodeId);
     setSelectedComponent(nodeId);
+    
+    // Additional debug: log the selected node details
+    if (nodeId) {
+      const selectedNode = nodes.find(n => n.id === nodeId);
+      console.log('Selected node details:', {
+        node: selectedNode,
+        hasParameters: selectedNode?.data?.parameters ? Object.keys(selectedNode.data.parameters).length : 0
+      });
+    }
   };
 
   const handleSaveStrategy = async () => {

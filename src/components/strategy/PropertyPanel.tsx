@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { Settings, Save, RotateCcw, AlertCircle } from 'lucide-react';
 import { useStrategyBuilderStore } from '../../stores/strategyBuilderStore';
-import { getComponentByType } from '../../data/componentLibrary';
+import { getComponentByType, componentLibrary } from '../../data/componentLibrary';
 import { ParameterDefinition } from '../../types/strategy';
 
 interface PropertyPanelProps {
@@ -15,22 +15,33 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNodeId }) => {
   const { nodes, updateNodeParameters } = useStrategyBuilderStore();
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
-  const selectedNode = selectedNodeId ? nodes.find(n => n.id === selectedNodeId) : null;
+  const selectedNode = selectedNodeId ? nodes.find(node => node.id === selectedNodeId) : null;
   const componentDef = selectedNode ? getComponentByType(selectedNode.data.type) : null;
   
-  // Debug logging
-  console.log('PropertyPanel:', {
+  // Debug: Check why componentDef is null
+  if (selectedNode && !componentDef) {
+    console.error('ComponentDef not found for type:', selectedNode.data.type);
+    console.log('Available component types:', componentLibrary.map(c => c.type));
+  }
+  
+  // Enhanced debug logging
+  console.log('PropertyPanel render:', {
     selectedNodeId,
+    nodesLength: nodes.length,
     selectedNode: selectedNode ? {
       id: selectedNode.id,
       type: selectedNode.data.type,
-      name: selectedNode.data.name
+      name: selectedNode.data.name,
+      parameters: selectedNode.data.parameters,
+      parametersKeys: selectedNode.data.parameters ? Object.keys(selectedNode.data.parameters) : []
     } : null,
     componentDef: componentDef ? {
       type: componentDef.type,
       name: componentDef.name,
-      parametersCount: componentDef.parameters?.length || 0
-    } : null
+      parametersCount: componentDef.parameters?.length || 0,
+      parameters: componentDef.parameters
+    } : null,
+    willShowForm: !!(selectedNode && componentDef && componentDef.parameters?.length > 0)
   });
   
   // Create dynamic validation schema based on component parameters
