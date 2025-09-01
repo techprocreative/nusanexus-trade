@@ -211,6 +211,7 @@ export interface StrategyBuilderState {
   addComponentFromDefinition: (definition: ComponentDefinition, position: { x: number; y: number }) => void;
   updateComponent: (id: string, updates: Partial<StrategyComponent>) => void;
   updateNodeParameters: (id: string, parameters: Record<string, any>) => void;
+  updateComponentPosition: (id: string, position: { x: number; y: number }) => void;
   removeComponent: (id: string) => void;
   addConnection: (connection: StrategyConnection) => void;
   removeConnection: (id: string) => void;

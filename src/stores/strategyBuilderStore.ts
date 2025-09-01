@@ -60,7 +60,7 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
 
         const errors = state.validationResult?.errors.filter(e => e.componentId === component.id) || [];
         
-        return {
+        const node: StrategyNode = {
           id: component.id,
           type: 'strategyNode', // Use consistent node type for React Flow
           position: component.position,
@@ -81,6 +81,16 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
             errors: errors.length > 0 ? errors : undefined,
           },
         };
+        
+        // Debug logging for node creation (can be removed in production)
+        // console.log('Creating node:', {
+        //   id: component.id,
+        //   type: component.type,
+        //   inputs: definition.inputs,
+        //   outputs: definition.outputs
+        // });
+        
+        return node;
       });
 
       set({ nodes });
@@ -225,6 +235,27 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
       set({ currentStrategy: updatedStrategy });
       get()._updateNodes();
       get().validateStrategy();
+    },
+
+    updateComponentPosition: (id: string, position: { x: number; y: number }) => {
+      const state = get();
+      if (!state.currentStrategy) return;
+
+      const updatedComponents = state.currentStrategy.components.map(component =>
+        component.id === id ? { ...component, position } : component
+      );
+
+      const updatedStrategy = {
+        ...state.currentStrategy,
+        components: updatedComponents,
+        metadata: {
+          ...state.currentStrategy.metadata,
+          modified: new Date().toISOString(),
+        },
+      };
+
+      set({ currentStrategy: updatedStrategy });
+      get()._updateNodes();
     },
 
     removeComponent: (id: string) => {

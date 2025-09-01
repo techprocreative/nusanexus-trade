@@ -24,15 +24,15 @@ const StrategyNodeComponent: React.FC<StrategyNodeComponentProps> = ({
   const hasInputs = data.inputs && data.inputs.length > 0;
   const hasOutputs = data.outputs && data.outputs.length > 0;
   
-  // Debug logging
-  console.log('StrategyNodeComponent render:', {
-    nodeId: data.id,
-    hasInputs: data.inputs && data.inputs.length > 0,
-    hasOutputs: data.outputs && data.outputs.length > 0,
-    inputs: data.inputs,
-    outputs: data.outputs,
-    isSelected: selected
-  });
+  // Debug logging (can be removed in production)
+  // console.log('StrategyNodeComponent render:', {
+  //   id: data.id,
+  //   type: data.type,
+  //   hasInputs,
+  //   hasOutputs,
+  //   inputs: data.inputs,
+  //   outputs: data.outputs
+  // });
   
   return (
     <div 
@@ -46,15 +46,19 @@ const StrategyNodeComponent: React.FC<StrategyNodeComponentProps> = ({
       `}
     >
       {/* Input Handles */}
-      {hasInputs && (
+      {hasInputs && data.inputs && data.inputs.map((input, index) => (
         <Handle
+          key={`input-${input}-${index}`}
           type="target"
           position={Position.Left}
-          id="input"
+          id={input}
           className="w-3 h-3 bg-gray-400 border-2 border-white hover:bg-blue-500 transition-colors"
-          style={{ left: -6 }}
+          style={{ 
+            left: -6, 
+            top: `${30 + (index * 20)}px`
+          }}
         />
-      )}
+      ))}
       
       {/* Node Header */}
       <div 
@@ -105,15 +109,19 @@ const StrategyNodeComponent: React.FC<StrategyNodeComponentProps> = ({
       </div>
       
       {/* Output Handles */}
-      {hasOutputs && (
+      {hasOutputs && data.outputs && data.outputs.map((output, index) => (
         <Handle
+          key={`output-${output}-${index}`}
           type="source"
           position={Position.Right}
-          id="output"
+          id={output}
           className="w-3 h-3 bg-gray-400 border-2 border-white hover:bg-blue-500 transition-colors"
-          style={{ right: -6 }}
+          style={{ 
+            right: -6, 
+            top: `${30 + (index * 20)}px`
+          }}
         />
-      )}
+      ))}
       
       {/* Validation Status Indicator */}
       <div className="absolute -top-2 -right-2 z-10">

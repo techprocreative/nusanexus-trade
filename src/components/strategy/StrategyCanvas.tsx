@@ -19,18 +19,15 @@ import { ComponentDefinition, StrategyNode } from '../../types/strategy';
 import StrategyNodeComponent from './StrategyNodeComponent';
 import '@xyflow/react/dist/style.css';
 
-// Define nodeTypes outside component to prevent React Flow warning
-const nodeTypes = {
-  strategyNode: StrategyNodeComponent,
-};
-
-
-
 interface StrategyCanvasInnerProps {
   onNodeSelect: (nodeId: string | null) => void;
 }
 
 const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect }) => {
+  // Memoize nodeTypes to prevent React Flow warning
+  const nodeTypes = useMemo(() => ({
+    strategyNode: StrategyNodeComponent,
+  }), []);
   const reactFlowWrapper = useRef<HTMLDivElement>(null);
   const { screenToFlowPosition } = useReactFlow();
   
@@ -41,6 +38,8 @@ const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect 
     addConnection,
     setSelectedComponent,
     setSelectedNodeId,
+    updateComponentPosition,
+    removeComponent,
   } = useStrategyBuilderStore();
 
   const [{ isOver }, drop] = useDrop({
@@ -66,10 +65,16 @@ const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect 
 
   const onNodesChange = useCallback(
     (changes: any[]) => {
-      // Handle node changes - for now just log them
       console.log('Node changes:', changes);
+      
+      // Handle position changes (drag)
+      changes.forEach((change) => {
+        if (change.type === 'position' && change.position && change.id) {
+          updateComponentPosition(change.id, change.position);
+        }
+      });
     },
-    []
+    [updateComponentPosition]
   );
 
   const onEdgesChange = useCallback(
@@ -83,21 +88,48 @@ const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect 
   const onConnect = useCallback(
     (connection: Connection) => {
       console.log('StrategyCanvas onConnect:', connection);
-      if (connection.source && connection.target) {
+      if (connection.source && connection.target && connection.sourceHandle && connection.targetHandle) {
         // Generate unique ID to prevent duplicate keys
         const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
         const newConnection = {
           id: uniqueId,
           source: connection.source,
           target: connection.target,
-          sourceHandle: connection.sourceHandle || 'output',
-          targetHandle: connection.targetHandle || 'input',
+          sourceHandle: connection.sourceHandle,
+          targetHandle: connection.targetHandle,
         };
         console.log('Adding connection:', newConnection);
         addConnection(newConnection);
+      } else {
+        console.log('Connection missing required handles:', connection);
       }
     },
     [addConnection]
+  );
+
+  const isValidConnection = useCallback(
+    (connection: Connection) => {
+      console.log('Validating connection:', connection);
+      
+      // Basic validation - prevent self-connections
+      if (connection.source === connection.target) {
+        console.log('Invalid: Self-connection not allowed');
+        return false;
+      }
+      
+      // Check if nodes exist
+      const sourceNode = nodes.find(n => n.id === connection.source);
+      const targetNode = nodes.find(n => n.id === connection.target);
+      
+      if (!sourceNode || !targetNode) {
+        console.log('Invalid: Source or target node not found');
+        return false;
+      }
+      
+      console.log('Connection validation passed');
+      return true;
+    },
+    [nodes]
   );
 
   const onNodeClick = useCallback(
@@ -119,10 +151,13 @@ const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect 
 
   const onNodeDoubleClick = useCallback(
     (event: React.MouseEvent, node: Node) => {
-      // Double-click to delete node - for now just log
-      console.log('Double-click on node:', node.id);
+      console.log('Double-click on node - deleting:', node.id);
+      removeComponent(node.id);
+      // Clear selection if deleted node was selected
+      setSelectedComponent(null);
+      onNodeSelect(null);
     },
-    []
+    [removeComponent, setSelectedComponent, onNodeSelect]
   );
 
   return (
@@ -134,6 +169,7 @@ const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect 
           onNodesChange={onNodesChange}
           onEdgesChange={onEdgesChange}
           onConnect={onConnect}
+          isValidConnection={isValidConnection}
           onNodeClick={onNodeClick}
           onPaneClick={onPaneClick}
           onNodeDoubleClick={onNodeDoubleClick}
@@ -141,6 +177,7 @@ const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect 
           fitView
           attributionPosition="bottom-left"
           className="bg-gray-50"
+          connectionMode="loose"
         >
           <Background 
             color="#e5e7eb" 
