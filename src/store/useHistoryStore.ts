@@ -207,7 +207,9 @@ const calculateMetrics = (trades: TradeHistory[]): PerformanceMetrics => {
       profitFactor: 0,
       sharpeRatio: 0,
       maxDrawdown: 0,
-      recoveryFactor: 0
+      recoveryFactor: 0,
+      mostTradedSymbol: '',
+      maxConsecutiveWins: 0
     };
   }
   
@@ -256,6 +258,26 @@ const calculateMetrics = (trades: TradeHistory[]): PerformanceMetrics => {
   
   const recoveryFactor = maxDrawdown > 0 ? (totalPnL / 10000) * 100 / maxDrawdown : 0;
   
+  // Calculate most traded symbol
+  const symbolCounts = trades.reduce((acc, trade) => {
+    acc[trade.symbol] = (acc[trade.symbol] || 0) + 1;
+    return acc;
+  }, {} as Record<string, number>);
+  const mostTradedSymbol = Object.entries(symbolCounts).reduce((a, b) => 
+    symbolCounts[a[0]] > symbolCounts[b[0]] ? a : b, ['', 0])[0] || '';
+  
+  // Calculate max consecutive wins
+  let maxConsecutiveWins = 0;
+  let currentConsecutiveWins = 0;
+  trades.forEach(trade => {
+    if (trade.pnl > 0) {
+      currentConsecutiveWins++;
+      maxConsecutiveWins = Math.max(maxConsecutiveWins, currentConsecutiveWins);
+    } else {
+      currentConsecutiveWins = 0;
+    }
+  });
+  
   return {
     totalTrades,
     winningTrades,
@@ -269,7 +291,9 @@ const calculateMetrics = (trades: TradeHistory[]): PerformanceMetrics => {
     profitFactor,
     sharpeRatio,
     maxDrawdown,
-    recoveryFactor
+    recoveryFactor,
+    mostTradedSymbol,
+    maxConsecutiveWins
   };
 };
 

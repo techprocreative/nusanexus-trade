@@ -16,11 +16,11 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNodeId }) => {
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   
   const selectedNode = selectedNodeId ? nodes.find(node => node.id === selectedNodeId) : null;
-  const componentDef = selectedNode ? getComponentByType(selectedNode.data.type) : null;
+  const componentDef = selectedNode ? getComponentByType(selectedNode.data.component.type) : null;
   
   // Debug: Check why componentDef is null
   if (selectedNode && !componentDef) {
-    console.error('ComponentDef not found for type:', selectedNode.data.type);
+    console.error('ComponentDef not found for type:', selectedNode.data.component.type);
     console.log('Available component types:', componentLibrary.map(c => c.type));
   }
   
@@ -30,7 +30,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNodeId }) => {
     nodesLength: nodes.length,
     selectedNode: selectedNode ? {
       id: selectedNode.id,
-      type: selectedNode.data.type,
+      type: selectedNode.data.component.type,
       name: selectedNode.data.name,
       parameters: selectedNode.data.parameters,
       parametersKeys: selectedNode.data.parameters ? Object.keys(selectedNode.data.parameters) : []
@@ -55,17 +55,17 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNodeId }) => {
         case 'number':
           field = z.number();
           if (param.validation?.min !== undefined) {
-            field = field.min(param.validation.min);
+            field = (field as z.ZodNumber).min(param.validation.min);
           }
           if (param.validation?.max !== undefined) {
-            field = field.max(param.validation.max);
+            field = (field as z.ZodNumber).max(param.validation.max);
           }
           break;
           
         case 'string':
           field = z.string();
           if (param.validation?.pattern) {
-            field = field.regex(new RegExp(param.validation.pattern));
+            field = (field as z.ZodString).regex(new RegExp(param.validation.pattern));
           }
           break;
           
@@ -75,7 +75,7 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNodeId }) => {
           
         case 'select':
           if (param.options) {
-            const values = param.options.map(opt => opt.value) as [string, ...string[]];
+            const values = param.options.map(opt => opt.value.toString()) as [string, ...string[]];
             field = z.enum(values);
           } else {
             field = z.string();
@@ -104,8 +104,8 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNodeId }) => {
     reset,
     watch,
     formState: { errors, isDirty }
-  } = useForm({
-    resolver: zodResolver(validationSchema),
+  } = useForm<Record<string, any>>({
+    resolver: zodResolver(validationSchema) as any,
     defaultValues: selectedNode?.data.parameters || {}
   });
   

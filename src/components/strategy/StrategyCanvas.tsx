@@ -177,7 +177,7 @@ const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect 
           fitView
           attributionPosition="bottom-left"
           className="bg-gray-50"
-          connectionMode="loose"
+          connectionMode="Loose"
         >
           <Background 
             color="#e5e7eb" 

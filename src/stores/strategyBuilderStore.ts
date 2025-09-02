@@ -65,7 +65,6 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
           type: 'strategyNode', // Use consistent node type for React Flow
           position: component.position,
           data: {
-            type: component.type, // Add component type to node data for PropertyPanel
             name: definition.name,
             description: definition.description,
             icon: definition.icon,
@@ -74,7 +73,6 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
             inputs: definition.inputs,
             outputs: definition.outputs,
             parameters: component.parameters,
-            validationStatus: errors.length === 0 ? 'valid' : 'error',
             component,
             definition,
             isValid: errors.length === 0,

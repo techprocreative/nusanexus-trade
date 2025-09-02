@@ -119,6 +119,13 @@ export interface PerformanceMetrics {
   sharpeRatio: number;
   maxDrawdown: number;
   recoveryFactor: number;
+  mostTradedSymbol: string;
+  maxConsecutiveWins: number;
+  bestTrade: number;
+  worstTrade: number;
+  totalVolume: number;
+  averageTradeDuration: number;
+  totalCommission: number;
 }
 
 // Order Templates

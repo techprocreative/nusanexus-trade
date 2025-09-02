@@ -54,7 +54,7 @@ const PerformanceAnalytics: React.FC = () => {
     performanceMetrics,
     chartData,
     analysisDateRange,
-    loading,
+    isLoading,
     error,
     calculatePerformanceMetrics,
     generateChartData,
@@ -79,11 +79,7 @@ const PerformanceAnalytics: React.FC = () => {
   }, [error, clearError]);
 
   const handleExportReport = () => {
-    exportPerformanceReport({
-      format: 'pdf',
-      includeCharts: true,
-      dateRange: analysisDateRange,
-    });
+    exportPerformanceReport();
   };
 
   const formatCurrency = (value: number) => {
@@ -155,8 +151,25 @@ const PerformanceAnalytics: React.FC = () => {
         </div>
         <div className="flex items-center space-x-3">
           <Select 
-            value={analysisDateRange || '30d'} 
-            onValueChange={(value: any) => setAnalysisDateRange(value)}
+            value="30d" 
+            onValueChange={(value: string) => {
+              const now = new Date();
+              let from: Date;
+              switch(value) {
+                case '7d':
+                  from = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                  break;
+                case '30d':
+                  from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                  break;
+                case '90d':
+                  from = new Date(now.getTime() - 90 * 24 * 60 * 60 * 1000);
+                  break;
+                default:
+                  from = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+              }
+              setAnalysisDateRange({ from, to: now });
+            }}
           >
             <SelectTrigger className="w-32 bg-gray-700/50 border-gray-600 text-white">
               <Calendar className="h-4 w-4 mr-2" />
@@ -199,7 +212,7 @@ const PerformanceAnalytics: React.FC = () => {
                   "text-2xl font-bold",
                   performanceMetrics.totalPnl >= 0 ? "text-green-400" : "text-red-400"
                 )}>
-                  {formatCurrency(performanceMetrics.totalPnl)}
+                  {formatCurrency(performanceMetrics.totalPnL)}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   {performanceMetrics.totalTrades} trades
@@ -245,9 +258,9 @@ const PerformanceAnalytics: React.FC = () => {
                 <p className="text-purple-400 text-sm font-medium">Avg P&L</p>
                 <p className={cn(
                   "text-2xl font-bold",
-                  performanceMetrics.averagePnl >= 0 ? "text-green-400" : "text-red-400"
+                  performanceMetrics.averageWin >= 0 ? "text-green-400" : "text-red-400"
                 )}>
-                  {formatCurrency(performanceMetrics.averagePnl)}
+                  {formatCurrency(performanceMetrics.averageWin)}
                 </p>
                 <p className="text-xs text-gray-400 mt-1">
                   per trade
@@ -306,7 +319,7 @@ const PerformanceAnalytics: React.FC = () => {
             <div className="h-80">
               <ResponsiveContainer width="100%" height="100%">
                 {chartType === 'pnl' ? (
-                  <AreaChart data={chartData}>
+                  <AreaChart data={chartData?.equity || []}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis 
                       dataKey="date" 
@@ -321,7 +334,7 @@ const PerformanceAnalytics: React.FC = () => {
                     <Tooltip content={<CustomTooltip />} />
                     <Area
                       type="monotone"
-                      dataKey="cumulativePnl"
+                      dataKey="value"
                       stroke={COLORS.primary}
                       fill={`${COLORS.primary}20`}
                       strokeWidth={2}
@@ -329,7 +342,7 @@ const PerformanceAnalytics: React.FC = () => {
                     />
                   </AreaChart>
                 ) : chartType === 'volume' ? (
-                  <BarChart data={chartData}>
+                  <BarChart data={chartData?.monthlyReturns || []}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis 
                       dataKey="date" 
@@ -342,14 +355,14 @@ const PerformanceAnalytics: React.FC = () => {
                     />
                     <Tooltip content={<CustomTooltip />} />
                     <Bar
-                      dataKey="volume"
+                      dataKey="value"
                       fill={COLORS.secondary}
-                      name="Volume"
+                      name="Monthly Returns"
                       radius={[2, 2, 0, 0]}
                     />
                   </BarChart>
                 ) : (
-                  <LineChart data={chartData}>
+                  <LineChart data={chartData?.winRate || []}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
                     <XAxis 
                       dataKey="date" 
@@ -364,7 +377,7 @@ const PerformanceAnalytics: React.FC = () => {
                     <Tooltip content={<CustomTooltip />} />
                     <Line
                       type="monotone"
-                      dataKey="winRate"
+                      dataKey="value"
                       stroke={COLORS.accent}
                       strokeWidth={2}
                       dot={{ fill: COLORS.accent, strokeWidth: 2, r: 4 }}
