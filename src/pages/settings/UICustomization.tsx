@@ -23,27 +23,34 @@ import { toast } from 'sonner';
 
 const UICustomization: React.FC = () => {
   const {
-    userSettings,
+    uiCustomization,
     isLoading,
     error,
-    fetchUserSettings,
+    fetchSettings,
     updateUICustomization,
     clearError
   } = useSettingsStore();
 
   const [uiForm, setUIForm] = useState<UICustomizationForm>({
     theme: 'system',
+    primaryColor: '#3b82f6',
+    accentColor: '#10b981',
     language: 'en',
     timezone: 'UTC',
     dateFormat: 'MM/DD/YYYY',
     timeFormat: '24h',
     currency: 'USD',
     compactMode: false,
+    showGridLines: true,
     showSidebar: true,
     sidebarCollapsed: false,
     showToolbar: true,
     showStatusBar: true,
     chartTheme: 'dark',
+    chartType: 'candlestick',
+    defaultTimeframe: '1h',
+    sidebarPosition: 'left',
+    currencyDisplay: 'symbol',
     gridLines: true,
     animations: true,
     soundEnabled: true,
@@ -113,34 +120,40 @@ const UICustomization: React.FC = () => {
   ];
 
   useEffect(() => {
-    fetchUserSettings();
-  }, [fetchUserSettings]);
+    fetchSettings('ui');
+  }, [fetchSettings]);
 
   useEffect(() => {
-    if (userSettings?.ui_customization) {
-      const ui = userSettings.ui_customization;
+    if (uiCustomization) {
       setUIForm({
-        theme: ui.theme || 'system',
-        language: ui.language || 'en',
-        timezone: ui.timezone || 'UTC',
-        dateFormat: ui.date_format || 'MM/DD/YYYY',
-        timeFormat: ui.time_format || '24h',
-        currency: ui.currency || 'USD',
-        compactMode: ui.compact_mode || false,
-        showSidebar: ui.show_sidebar !== false,
-        sidebarCollapsed: ui.sidebar_collapsed || false,
-        showToolbar: ui.show_toolbar !== false,
-        showStatusBar: ui.show_status_bar !== false,
-        chartTheme: ui.chart_theme || 'dark',
-        gridLines: ui.grid_lines !== false,
-        animations: ui.animations !== false,
-        soundEnabled: ui.sound_enabled !== false,
-        highContrast: ui.high_contrast || false,
-        fontSize: ui.font_size || 'medium',
-        density: ui.density || 'comfortable'
+        theme: uiCustomization.theme || 'system',
+        primaryColor: uiCustomization.primaryColor || '#3b82f6',
+        accentColor: uiCustomization.accentColor || '#10b981',
+        language: uiCustomization.language || 'en',
+        timezone: uiCustomization.timezone || 'UTC',
+        dateFormat: uiCustomization.dateFormat || 'MM/DD/YYYY',
+        timeFormat: uiCustomization.timeFormat || '24h',
+        currency: uiCustomization.currency || 'USD',
+        compactMode: uiCustomization.compactMode || false,
+        showGridLines: uiCustomization.showGridLines !== false,
+        showSidebar: uiCustomization.showSidebar !== false,
+        sidebarCollapsed: uiCustomization.sidebarCollapsed || false,
+        showToolbar: uiCustomization.showToolbar !== false,
+        showStatusBar: uiCustomization.showStatusBar !== false,
+        chartTheme: uiCustomization.chartTheme || 'dark',
+        chartType: uiCustomization.chartType || 'candlestick',
+        defaultTimeframe: uiCustomization.defaultTimeframe || '1h',
+        sidebarPosition: uiCustomization.sidebarPosition || 'left',
+        currencyDisplay: uiCustomization.currencyDisplay || 'symbol',
+        gridLines: uiCustomization.gridLines !== false,
+        animations: uiCustomization.animations !== false,
+        soundEnabled: uiCustomization.soundEnabled !== false,
+        highContrast: uiCustomization.highContrast || false,
+        fontSize: uiCustomization.fontSize || 'medium',
+        density: uiCustomization.density || 'comfortable'
       });
     }
-  }, [userSettings]);
+  }, [uiCustomization]);
 
   useEffect(() => {
     if (error) {
@@ -160,22 +173,29 @@ const UICustomization: React.FC = () => {
     try {
       await updateUICustomization({
         theme: uiForm.theme,
+        primaryColor: uiForm.primaryColor,
+        accentColor: uiForm.accentColor,
         language: uiForm.language,
         timezone: uiForm.timezone,
-        date_format: uiForm.dateFormat,
-        time_format: uiForm.timeFormat,
+        dateFormat: uiForm.dateFormat,
+        timeFormat: uiForm.timeFormat,
         currency: uiForm.currency,
-        compact_mode: uiForm.compactMode,
-        show_sidebar: uiForm.showSidebar,
-        sidebar_collapsed: uiForm.sidebarCollapsed,
-        show_toolbar: uiForm.showToolbar,
-        show_status_bar: uiForm.showStatusBar,
-        chart_theme: uiForm.chartTheme,
-        grid_lines: uiForm.gridLines,
+        compactMode: uiForm.compactMode,
+        showGridLines: uiForm.showGridLines,
+        showSidebar: uiForm.showSidebar,
+        sidebarCollapsed: uiForm.sidebarCollapsed,
+        showToolbar: uiForm.showToolbar,
+        showStatusBar: uiForm.showStatusBar,
+        chartTheme: uiForm.chartTheme,
+        chartType: uiForm.chartType,
+        defaultTimeframe: uiForm.defaultTimeframe,
+        sidebarPosition: uiForm.sidebarPosition,
+        currencyDisplay: uiForm.currencyDisplay,
+        gridLines: uiForm.gridLines,
         animations: uiForm.animations,
-        sound_enabled: uiForm.soundEnabled,
-        high_contrast: uiForm.highContrast,
-        font_size: uiForm.fontSize,
+        soundEnabled: uiForm.soundEnabled,
+        highContrast: uiForm.highContrast,
+        fontSize: uiForm.fontSize,
         density: uiForm.density
       });
       toast.success('UI preferences updated successfully');
@@ -186,27 +206,33 @@ const UICustomization: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (userSettings?.ui_customization) {
-      const ui = userSettings.ui_customization;
+    if (uiCustomization) {
       setUIForm({
-        theme: ui.theme || 'system',
-        language: ui.language || 'en',
-        timezone: ui.timezone || 'UTC',
-        dateFormat: ui.date_format || 'MM/DD/YYYY',
-        timeFormat: ui.time_format || '24h',
-        currency: ui.currency || 'USD',
-        compactMode: ui.compact_mode || false,
-        showSidebar: ui.show_sidebar !== false,
-        sidebarCollapsed: ui.sidebar_collapsed || false,
-        showToolbar: ui.show_toolbar !== false,
-        showStatusBar: ui.show_status_bar !== false,
-        chartTheme: ui.chart_theme || 'dark',
-        gridLines: ui.grid_lines !== false,
-        animations: ui.animations !== false,
-        soundEnabled: ui.sound_enabled !== false,
-        highContrast: ui.high_contrast || false,
-        fontSize: ui.font_size || 'medium',
-        density: ui.density || 'comfortable'
+        theme: uiCustomization.theme || 'system',
+        primaryColor: uiCustomization.primaryColor || '#3b82f6',
+        accentColor: uiCustomization.accentColor || '#10b981',
+        language: uiCustomization.language || 'en',
+        timezone: uiCustomization.timezone || 'UTC',
+        dateFormat: uiCustomization.dateFormat || 'MM/DD/YYYY',
+        timeFormat: uiCustomization.timeFormat || '24h',
+        currency: uiCustomization.currency || 'USD',
+        compactMode: uiCustomization.compactMode || false,
+        showGridLines: uiCustomization.showGridLines !== false,
+        showSidebar: uiCustomization.showSidebar !== false,
+        sidebarCollapsed: uiCustomization.sidebarCollapsed || false,
+        showToolbar: uiCustomization.showToolbar !== false,
+        showStatusBar: uiCustomization.showStatusBar !== false,
+        chartTheme: uiCustomization.chartTheme || 'dark',
+        chartType: uiCustomization.chartType || 'candlestick',
+        defaultTimeframe: uiCustomization.defaultTimeframe || '1h',
+        sidebarPosition: uiCustomization.sidebarPosition || 'left',
+        currencyDisplay: uiCustomization.currencyDisplay || 'symbol',
+        gridLines: uiCustomization.gridLines !== false,
+        animations: uiCustomization.animations !== false,
+        soundEnabled: uiCustomization.soundEnabled !== false,
+        highContrast: uiCustomization.highContrast || false,
+        fontSize: uiCustomization.fontSize || 'medium',
+        density: uiCustomization.density || 'comfortable'
       });
     }
     setHasChanges(false);

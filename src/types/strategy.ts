@@ -13,6 +13,33 @@ export interface Strategy {
   creator?: StrategyCreator;
   tags?: string[];
   isFavorite?: boolean;
+  version?: string;
+  metadata?: {
+    created: string;
+    modified: string;
+    version: string;
+    [key: string]: any;
+  };
+  components?: StrategyNode[];
+  connections?: StrategyConnection[];
+  validation?: ValidationResult;
+}
+
+export interface StrategyTemplate {
+  id: string;
+  name: string;
+  description: string;
+  category: string;
+  difficulty: 'beginner' | 'intermediate' | 'advanced';
+  tags: string[];
+  strategy: Strategy;
+  metadata: {
+    created: string;
+    author: string;
+    version: string;
+    downloads: number;
+    rating: number;
+  };
 }
 
 export interface PerformanceMetrics {
@@ -362,6 +389,131 @@ export interface PaginatedResponse<T> {
   hasMore: boolean;
 }
 
+// Strategy Builder Types
+export interface StrategyNode {
+  id: string;
+  type: string;
+  position: { x: number; y: number };
+  data: {
+    label: string;
+    [key: string]: any;
+  };
+  parameters?: Record<string, any>;
+}
+
+export interface StrategyEdge {
+  id: string;
+  source: string;
+  target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
+  type?: string;
+  animated?: boolean;
+  style?: Record<string, any>;
+  data?: {
+    connection: StrategyConnection;
+    isValid: boolean;
+  };
+}
+
+export interface StrategyBuilderState {
+  currentStrategy: Strategy | null;
+  nodes: StrategyNode[];
+  edges: StrategyEdge[];
+  selectedComponent: string | null;
+  selectedConnection: string | null;
+  selectedNodeId: string | null;
+  draggedComponent: ComponentDefinition | null;
+  validationResult: ValidationResult | null;
+  isValidating: boolean;
+  componentDefinitions: ComponentDefinition[];
+  componentCategories: Record<string, ComponentDefinition[]>;
+  templates: StrategyTemplate[];
+  
+  // Actions
+  setCurrentStrategy: (strategy: Strategy | null) => void;
+  addComponent: (component: any) => void; // StrategyComponent will be defined elsewhere
+  updateComponent: (id: string, updates: any) => void; // Partial<StrategyComponent> will be defined elsewhere
+  removeComponent: (id: string) => void;
+  addConnection: (connection: StrategyConnection) => void;
+  removeConnection: (id: string) => void;
+  setSelectedComponent: (id: string | null) => void;
+  setSelectedConnection: (id: string | null) => void;
+  setSelectedNodeId: (id: string | null) => void;
+  validateStrategy: () => Promise<ValidationResult>;
+  saveStrategy: () => Promise<void>;
+  loadStrategy: (id: string) => Promise<void>;
+  exportStrategy: () => string;
+  clearStrategy: () => void;
+}
+
+export interface StrategyConnection {
+  id: string;
+  source: string;
+  target: string;
+  sourceHandle?: string;
+  targetHandle?: string;
+  type?: string;
+  animated?: boolean;
+  style?: any;
+}
+
+export type ComponentType = string;
+
+// Validation Types
+export interface ValidationResult {
+  isValid: boolean;
+  errors: ValidationError[];
+  warnings: ValidationWarning[];
+  completeness: number;
+  suggestions: string[];
+}
+
+export interface ValidationError {
+  id: string;
+  type: 'invalid-parameter' | 'missing-connection' | 'circular-dependency' | 'logic-error' | 'orphaned-component';
+  componentId?: string;
+  message: string;
+  severity: 'error' | 'warning';
+}
+
+export interface ValidationWarning {
+  id: string;
+  type: 'best-practice' | 'performance' | 'compatibility';
+  componentId?: string;
+  message: string;
+  suggestion: string;
+}
+
+// Component definitions
+export interface ComponentDefinition {
+  id: string;
+  name: string;
+  type: ComponentType;
+  description: string;
+  category: string;
+  parameters: Record<string, any>;
+  inputs: string[];
+  outputs: string[];
+  icon?: any;
+  color?: any;
+}
+
+export interface StrategyComponent {
+  id: string;
+  name: string;
+  type: ComponentType;
+  parameters: Record<string, any>;
+  position?: { x: number; y: number };
+}
+
+export interface ComponentCategory {
+  id: string;
+  name: string;
+  description: string;
+  components: ComponentDefinition[];
+}
+
 // Utility Types
 export type StrategyStatus = Strategy['status'];
 export type ParameterType = StrategyParameter['parameterType'];
@@ -372,3 +524,10 @@ export type RiskLevel = 'low' | 'medium' | 'high';
 export type TradingSide = TradeResult['side'];
 export type ViewMode = StrategyLibraryState['viewMode'];
 export type ModalTab = StrategyModalState['activeTab'];
+
+// Additional utility type aliases
+export type ValidationSeverity = 'error' | 'warning' | 'info';
+export type ValidationErrorType = 'missing-connection' | 'invalid-parameter' | 'circular-dependency' | 'missing-component';
+export type BulkOperationType = 'delete' | 'archive' | 'duplicate' | 'export';
+export type SortField = 'name' | 'createdAt' | 'updatedAt' | 'performance';
+export type SortOrder = 'asc' | 'desc';

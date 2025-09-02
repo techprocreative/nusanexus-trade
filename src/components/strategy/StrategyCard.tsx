@@ -1,5 +1,5 @@
 import React from 'react';
-import { Heart, Eye, Play, Pause, Copy, MoreHorizontal, TrendingUp, TrendingDown, Star, Users, FileText } from 'lucide-react';
+import { Heart, Play, Pause, Copy, MoreHorizontal, TrendingUp, TrendingDown, Star, Users, FileText } from 'lucide-react';
 import { useStrategyStore } from '@/stores/strategyStore';
 import { useStrategyBuilderStore } from '@/stores/strategyBuilderStore';
 import { Button } from '@/components/ui/button';
@@ -17,8 +17,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
   strategy,
   isSelected,
   onSelect,
-  onView,
-  viewMode = 'grid'
+  showSelection = false
 }) => {
   const { toggleFavorite, cloneStrategy, updateStrategy } = useStrategyStore();
   const navigate = useNavigate();
@@ -86,170 +85,20 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     }).format(value);
   };
 
-  if (viewMode === 'list') {
-    return (
-      <Card className="hover:shadow-lg transition-all duration-200 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50">
-        <CardContent className="p-6">
-          <div className="flex items-center gap-4">
-            {/* Selection Checkbox */}
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={onSelect}
-              onClick={(e) => e.stopPropagation()}
-            />
-
-            {/* Strategy Info */}
-            <div className="flex-1 min-w-0">
-              <div className="flex items-start justify-between mb-2">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-semibold text-slate-900 dark:text-slate-100 truncate">
-                      {strategy.name}
-                    </h3>
-                    <Badge className={getStatusColor(strategy.status)} variant="secondary">
-                      {strategy.status}
-                    </Badge>
-                    {strategy.isFavorite && (
-                      <Heart className="h-4 w-4 text-red-500 fill-current" />
-                    )}
-                  </div>
-                  <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">
-                    {strategy.description}
-                  </p>
-                </div>
-              </div>
-
-              {/* Creator Info */}
-              {strategy.creator && (
-                <div className="flex items-center gap-2 mb-3">
-                  <Avatar className="h-6 w-6">
-                    <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${strategy.creator.name}`} />
-                    <AvatarFallback className="text-xs">
-                      {strategy.creator.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                  <span className="text-sm text-slate-600 dark:text-slate-400">
-                    {strategy.creator.name}
-                  </span>
-                  {strategy.creator.verified && (
-                    <Star className="h-3 w-3 text-yellow-500 fill-current" />
-                  )}
-                </div>
-              )}
-
-              {/* Tags */}
-              {strategy.tags && strategy.tags.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {strategy.tags.slice(0, 3).map((tag, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {tag}
-                    </Badge>
-                  ))}
-                  {strategy.tags.length > 3 && (
-                    <Badge variant="outline" className="text-xs">
-                      +{strategy.tags.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Performance Metrics */}
-            <div className="grid grid-cols-4 gap-4 text-center">
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Win Rate</p>
-                <p className="font-semibold text-slate-900 dark:text-slate-100">
-                  {strategy.performanceMetrics?.winRate ? formatPercentage(strategy.performanceMetrics.winRate) : 'N/A'}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Total P&L</p>
-                <p className={`font-semibold ${
-                  (strategy.performanceMetrics?.totalPnL || 0) >= 0 
-                    ? 'text-green-600 dark:text-green-400' 
-                    : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {strategy.performanceMetrics?.totalPnL ? formatCurrency(strategy.performanceMetrics.totalPnL) : 'N/A'}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Sharpe</p>
-                <p className="font-semibold text-slate-900 dark:text-slate-100">
-                  {strategy.performanceMetrics?.sharpeRatio ? strategy.performanceMetrics.sharpeRatio.toFixed(2) : 'N/A'}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-slate-500 dark:text-slate-400 mb-1">Max DD</p>
-                <p className="font-semibold text-red-600 dark:text-red-400">
-                  {strategy.performanceMetrics?.maxDrawdown ? formatPercentage(strategy.performanceMetrics.maxDrawdown) : 'N/A'}
-                </p>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onView}
-              >
-                <Eye className="h-4 w-4 mr-2" />
-                View
-              </Button>
-              
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
-                    <MoreHorizontal className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <DropdownMenuItem onClick={handleToggleFavorite}>
-                    <Heart className={`h-4 w-4 mr-2 ${strategy.isFavorite ? 'fill-current text-red-500' : ''}`} />
-                    {strategy.isFavorite ? 'Remove from Favorites' : 'Add to Favorites'}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleToggleStatus}>
-                    {strategy.status === 'active' ? (
-                      <><Pause className="h-4 w-4 mr-2" />Deactivate</>
-                    ) : (
-                      <><Play className="h-4 w-4 mr-2" />Activate</>
-                    )}
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleClone}>
-                    <Copy className="h-4 w-4 mr-2" />
-                    Clone Strategy
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleUseAsTemplate}>
-                    <FileText className="h-4 w-4 mr-2" />
-                    Use as Template
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem className="text-red-600">
-                    Delete
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  // Grid view
   return (
     <Card 
-      className="group hover:shadow-xl transition-all duration-300 cursor-pointer bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50 hover:border-blue-300 dark:hover:border-blue-600"
-      onClick={onView}
+      className="group hover:shadow-xl transition-all duration-300 bg-white/70 dark:bg-slate-800/70 backdrop-blur-sm border-slate-200/50 dark:border-slate-700/50 hover:border-blue-300 dark:hover:border-blue-600"
     >
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
-            <Checkbox
-              checked={isSelected}
-              onCheckedChange={onSelect}
-              onClick={(e) => e.stopPropagation()}
-            />
+            {showSelection && (
+              <Checkbox
+                checked={isSelected}
+                onCheckedChange={(checked) => onSelect?.(strategy.id, checked as boolean)}
+                onClick={(e) => e.stopPropagation()}
+              />
+            )}
             <Badge className={getStatusColor(strategy.status)} variant="secondary">
               {strategy.status}
             </Badge>
@@ -291,9 +140,6 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
                   Use as Template
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className="text-red-600">
-                  Delete
-                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -411,27 +257,15 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
         {/* Action Buttons */}
         <div className="flex gap-2 mt-4">
           <Button 
-            variant="outline" 
-            size="sm" 
-            className="flex-1"
-            onClick={(e) => {
-              e.stopPropagation();
-              onView();
-            }}
-          >
-            <Eye className="h-4 w-4 mr-2" />
-            View Details
-          </Button>
-          <Button 
             variant={strategy.status === 'active' ? 'default' : 'outline'}
             size="sm"
             onClick={handleToggleStatus}
-            className={strategy.status === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}
+            className={`flex-1 ${strategy.status === 'active' ? 'bg-green-600 hover:bg-green-700' : ''}`}
           >
             {strategy.status === 'active' ? (
-              <><Pause className="h-4 w-4" /></>
+              <><Pause className="h-4 w-4 mr-2" />Deactivate</>
             ) : (
-              <><Play className="h-4 w-4" /></>
+              <><Play className="h-4 w-4 mr-2" />Activate</>
             )}
           </Button>
         </div>

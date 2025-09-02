@@ -70,7 +70,7 @@ function validateNodes(nodes: StrategyNode[]): { errors: ValidationError[]; warn
     const componentParameters = node.data?.component?.parameters || {};
 
     // Validate required parameters
-    for (const param of component.parameters) {
+    for (const param of Object.values(component.parameters)) {
       if (param.required && (componentParameters[param.name] === undefined || componentParameters[param.name] === '')) {
         errors.push({
           id: `missing-param-${node.id}-${param.name}`,
@@ -101,7 +101,7 @@ function validateNodes(nodes: StrategyNode[]): { errors: ValidationError[]; warn
     const configuredParams = Object.keys(componentParameters).filter(key => 
       componentParameters[key] !== undefined && componentParameters[key] !== ''
     );
-    const totalParams = component.parameters.length;
+    const totalParams = Object.keys(component.parameters).length;
     const configurationRatio = configuredParams.length / totalParams;
 
     if (configurationRatio < 0.5) {
@@ -439,7 +439,8 @@ export function validateNode(node: StrategyNode): ValidationResult {
         severity: 'error'
       }],
       warnings: [],
-      completeness: 0
+      completeness: 0,
+      suggestions: [`Check if component type '${node.type}' is correctly registered`]
     };
   }
 
@@ -448,7 +449,7 @@ export function validateNode(node: StrategyNode): ValidationResult {
 
   // Validate required parameters
   if (node.data?.component?.parameters) {
-    for (const param of component.parameters) {
+    for (const param of Object.values(component.parameters)) {
       if (param.required && (node.data.component.parameters[param.name] === undefined || node.data.component.parameters[param.name] === '')) {
         errors.push({
           id: `missing-param-${node.id}-${param.name}`,
@@ -481,7 +482,7 @@ export function validateNode(node: StrategyNode): ValidationResult {
     const value = node.data?.component?.parameters?.[key];
     return value !== undefined && value !== '';
   });
-  const totalParams = component.parameters.length;
+  const totalParams = Object.keys(component.parameters).length;
   const completeness = totalParams > 0 ? Math.round((configuredParams.length / totalParams) * 100) : 100;
 
   // Add warning for incomplete configuration
@@ -499,7 +500,8 @@ export function validateNode(node: StrategyNode): ValidationResult {
     isValid: errors.length === 0,
     errors,
     warnings,
-    completeness
+    completeness,
+    suggestions: errors.length > 0 ? ['Fix parameter validation errors'] : []
   };
 }
 
@@ -565,6 +567,7 @@ export function validateConnection(connection: StrategyConnection, nodes: Strate
     isValid: errors.length === 0,
     errors,
     warnings,
-    completeness: errors.length === 0 ? 100 : 0
+    completeness: errors.length === 0 ? 100 : 0,
+    suggestions: errors.length > 0 ? ['Fix connection validation errors'] : []
   };
 }

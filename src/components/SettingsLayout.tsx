@@ -7,6 +7,7 @@ import {
   Bell,
   Shield,
   Database,
+  Smartphone,
   Settings as SettingsIcon,
   ChevronLeft
 } from 'lucide-react';
@@ -65,6 +66,13 @@ const settingsNavItems = [
     icon: Database,
     path: '/settings/data',
     description: 'Export, backup, and privacy settings'
+  },
+  {
+    id: 'mobile',
+    label: 'Mobile Settings',
+    icon: Smartphone,
+    path: '/settings/mobile',
+    description: 'Haptic feedback, PWA, and mobile optimization'
   }
 ];
 

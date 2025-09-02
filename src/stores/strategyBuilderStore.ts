@@ -65,6 +65,7 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
           type: 'strategyNode', // Use consistent node type for React Flow
           position: component.position,
           data: {
+            label: definition.name,
             name: definition.name,
             description: definition.description,
             icon: definition.icon,
@@ -72,12 +73,12 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
             category: definition.category,
             inputs: definition.inputs,
             outputs: definition.outputs,
-            parameters: component.parameters,
             component,
             definition,
             isValid: errors.length === 0,
             errors: errors.length > 0 ? errors : undefined,
           },
+          parameters: component.parameters,
         };
         
         // Debug logging for node creation (can be removed in production)
@@ -135,19 +136,63 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
         const newStrategy: Strategy = {
           id: state._generateId(),
           name: 'Untitled Strategy',
+          description: 'A new strategy',
+          status: 'inactive' as const,
+          parameters: {},
+          performanceMetrics: {
+            winRate: 0,
+            totalPnL: 0,
+            sharpeRatio: 0,
+            maxDrawdown: 0,
+            totalTrades: 0,
+            profitFactor: 0,
+            averageWin: 0,
+            averageLoss: 0,
+            consecutiveWins: 0,
+            consecutiveLosses: 0,
+            volatility: 0,
+            calmarRatio: 0,
+            sortinoRatio: 0,
+            returnOnInvestment: 0,
+          },
+          creatorId: 'user',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isPublic: false,
           version: '1.0.0',
-          components: [component],
+          components: [{
+            id: component.id,
+            type: component.type,
+            position: component.position || { x: 0, y: 0 },
+            data: {
+              label: component.name,
+              component: component
+            },
+            parameters: component.parameters
+          }],
           connections: [],
           metadata: {
             created: new Date().toISOString(),
             modified: new Date().toISOString(),
+            version: '1.0.0',
           },
         };
         set({ currentStrategy: newStrategy, selectedComponent: component.id });
       } else {
+        const newNode: StrategyNode = {
+          id: component.id,
+          type: component.type,
+          position: component.position || { x: 0, y: 0 },
+          data: {
+            label: component.name,
+            component: component
+          },
+          parameters: component.parameters
+        };
+        
         const updatedStrategy = {
           ...state.currentStrategy,
-          components: [...state.currentStrategy.components, component],
+          components: [...state.currentStrategy.components, newNode],
           metadata: {
             ...state.currentStrategy.metadata,
             modified: new Date().toISOString(),
@@ -172,13 +217,10 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
       
       const strategyComponent: StrategyComponent = {
         id: componentId,
+        name: definition.name,
         type: definition.type,
         position,
         parameters: defaultParameters,
-        metadata: {
-          created: new Date().toISOString(),
-          modified: new Date().toISOString(),
-        },
       };
       
       console.log('Creating StrategyComponent from definition:', {
@@ -353,6 +395,7 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
           errors: [],
           warnings: [],
           completeness: 0,
+          suggestions: [],
         };
         set({ validationResult: emptyResult });
         return emptyResult;
@@ -395,6 +438,7 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
           }],
           warnings: [],
           completeness: 0,
+          suggestions: [],
         };
         
         set({ validationResult: errorResult, isValidating: false });

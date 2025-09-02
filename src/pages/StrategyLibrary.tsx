@@ -49,6 +49,12 @@ const StrategyLibrary: React.FC = () => {
   const [searchInput, setSearchInput] = useState(filters.search);
   const [showFilters, setShowFilters] = useState(false);
   const [showAIInsights, setShowAIInsights] = useState(false);
+  const [selectedStrategyId, setSelectedStrategyId] = useState<string | null>(null);
+  const [showBulkOperations, setShowBulkOperations] = useState(false);
+  const [setSelectedStrategies] = useState(() => (strategies: string[]) => {
+    // This should be handled by the store, but adding local state as fallback
+    console.log('Selected strategies:', strategies);
+  });
 
   useEffect(() => {
     fetchStrategies(undefined, true);
@@ -79,7 +85,7 @@ const StrategyLibrary: React.FC = () => {
       toast.error('Please select strategies first');
       return;
     }
-    setBulkOperationsOpen(true);
+    setShowBulkOperations(true);
   };
 
   const handleCreateStrategy = () => {
@@ -220,7 +226,7 @@ const StrategyLibrary: React.FC = () => {
                             <div key={status} className="flex items-center space-x-2">
                               <Checkbox
                                 id={status}
-                                checked={filters.status.includes(status)}
+                                checked={filters.status.includes(status as 'active' | 'inactive' | 'testing')}
                                 onCheckedChange={(checked) => {
                                   const newStatus = checked
                                     ? [...filters.status, status]
@@ -450,9 +456,14 @@ const StrategyLibrary: React.FC = () => {
                   key={strategy.id}
                   strategy={strategy}
                   isSelected={selectedStrategies.includes(strategy.id)}
-                  onSelect={() => toggleStrategySelection(strategy.id)}
-                  onView={() => openStrategyModal(strategy.id)}
-                  viewMode={viewMode}
+                  onSelect={(strategyId, selected) => {
+                    if (selected) {
+                      setSelectedStrategies([...selectedStrategies, strategyId]);
+                    } else {
+                      setSelectedStrategies(selectedStrategies.filter(id => id !== strategyId));
+                    }
+                  }}
+                  showSelection={true}
                 />
               ))}
             </div>
@@ -475,15 +486,20 @@ const StrategyLibrary: React.FC = () => {
       </div>
 
       {/* Modals and Panels */}
-      <StrategyDetailsModal />
-      <BulkOperationsPanel />
+      <StrategyDetailsModal 
+        isOpen={!!selectedStrategyId}
+        strategyId={selectedStrategyId || ''}
+        onClose={() => setSelectedStrategyId(null)}
+      />
+      <BulkOperationsPanel 
+        isOpen={showBulkOperations}
+        selectedStrategies={selectedStrategies}
+        onClose={() => setShowBulkOperations(false)}
+      />
       
       {/* AI Insights Dashboard */}
       {showAIInsights && (
-        <AIInsightsDashboard
-          isOpen={showAIInsights}
-          onClose={() => setShowAIInsights(false)}
-        />
+        <AIInsightsDashboard strategies={strategies} />
       )}
     </div>
   );

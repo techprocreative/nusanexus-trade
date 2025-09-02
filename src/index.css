@@ -2,10 +2,81 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  /* Mobile-first responsive base styles */
+  html {
+    /* Prevent zoom on input focus on iOS */
+    -webkit-text-size-adjust: 100%;
+    /* Enable smooth scrolling */
+    scroll-behavior: smooth;
+  }
+  
+  body {
+    /* Prevent overscroll bounce on iOS */
+    overscroll-behavior: none;
+    /* Optimize touch scrolling */
+    -webkit-overflow-scrolling: touch;
+    /* Prevent text selection on touch */
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+  }
+  
+  /* Allow text selection for input elements */
+  input, textarea, [contenteditable] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+  }
+  
+  /* Touch-friendly button styles */
+  button, [role="button"] {
+    @apply min-h-touch min-w-touch;
+    /* Remove tap highlight on mobile */
+    -webkit-tap-highlight-color: transparent;
+    /* Improve touch responsiveness */
+    touch-action: manipulation;
+  }
+}
+
 @layer components {
   .glass-card {
     @apply backdrop-blur-md bg-gray-900/30 border border-gray-700/50 rounded-xl;
     @apply hover:bg-gray-900/40 transition-all duration-300;
+  }
+  
+  /* Mobile-specific components */
+  .mobile-container {
+    @apply px-4 mx-auto max-w-sm sm:max-w-md md:max-w-lg lg:max-w-4xl xl:max-w-6xl;
+  }
+  
+  .touch-button {
+    @apply min-h-touch min-w-touch flex items-center justify-center;
+    @apply active:scale-95 transition-transform duration-150;
+    @apply focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50;
+  }
+  
+  .swipe-container {
+    @apply overflow-x-auto scrollbar-hide;
+    scroll-snap-type: x mandatory;
+  }
+  
+  .swipe-item {
+    scroll-snap-align: start;
+  }
+  
+  /* Bottom navigation safe area */
+  .bottom-nav-safe {
+    padding-bottom: max(env(safe-area-inset-bottom), 1rem);
+  }
+  
+  /* Mobile form styles */
+  .mobile-input {
+    @apply text-base; /* Prevent zoom on iOS */
+    @apply min-h-touch px-4 py-3;
   }
 }
 
@@ -16,6 +87,31 @@
   }
   .scrollbar-hide::-webkit-scrollbar {
     display: none;
+  }
+  
+  /* Safe area utilities */
+  .safe-top {
+    padding-top: env(safe-area-inset-top);
+  }
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .safe-left {
+    padding-left: env(safe-area-inset-left);
+  }
+  .safe-right {
+    padding-right: env(safe-area-inset-right);
+  }
+  
+  /* Touch interaction utilities */
+  .touch-pan-x {
+    touch-action: pan-x;
+  }
+  .touch-pan-y {
+    touch-action: pan-y;
+  }
+  .touch-manipulation {
+    touch-action: manipulation;
   }
 }
 
@@ -28,4 +124,14 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  
+  /* Mobile viewport units */
+  --vh: 1vh;
+}
+
+/* Mobile viewport height fix */
+@media screen and (max-width: 768px) {
+  :root {
+    --vh: 1dvh;
+  }
 }

@@ -92,11 +92,18 @@ export interface SimulationResult {
 export interface UserFeedback {
   id: string;
   userId: string;
+  userName: string;
+  userAvatar: string;
+  isVerified: boolean;
   recommendationId: string;
+  strategyName: string;
   rating: number;
+  comment: string;
   comments: string;
+  category: 'performance' | 'usability' | 'documentation' | 'support';
   implemented: boolean;
   performanceData?: PerformanceMetrics;
+  helpfulCount: number;
   createdAt: Date;
 }
 
@@ -247,7 +254,7 @@ export const useAIStrategyStore = create<AIStrategyState>((set, get) => ({
         case 'low-risk':
           return rec.riskAssessment.riskScore <= 4;
         case 'trending':
-          return rec.strategy.category === 'trend-following';
+          return rec.strategy.category === 'trend_following';
         default:
           return true;
       }

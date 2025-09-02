@@ -8,6 +8,7 @@ import UICustomization from './settings/UICustomization';
 import NotificationSettings from './settings/NotificationSettings';
 import SecuritySettings from './settings/SecuritySettings';
 import DataBackup from './settings/DataBackup';
+import MobileSettings from './settings/MobileSettings';
 
 const Settings: React.FC = () => {
   return (
@@ -21,6 +22,7 @@ const Settings: React.FC = () => {
         <Route path="notifications" element={<NotificationSettings />} />
         <Route path="security" element={<SecuritySettings />} />
         <Route path="data" element={<DataBackup />} />
+        <Route path="mobile" element={<MobileSettings />} />
       </Route>
     </Routes>
   );

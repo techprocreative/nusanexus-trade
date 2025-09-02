@@ -21,15 +21,16 @@ import { toast } from 'sonner';
 
 const TradingPreferences: React.FC = () => {
   const {
-    userSettings,
+    tradingPreferences,
     isLoading,
     error,
-    fetchUserSettings,
+    fetchSettings,
     updateTradingPreferences,
     clearError
   } = useSettingsStore();
 
   const [tradingForm, setTradingForm] = useState<TradingPreferencesForm>({
+    defaultOrderType: 'market',
     defaultLotSize: 0.01,
     maxLotSize: 1.0,
     defaultStopLoss: 50,
@@ -47,40 +48,60 @@ const TradingPreferences: React.FC = () => {
     partialCloseEnabled: false,
     partialClosePercent: 50,
     newsFilterEnabled: false,
-    highImpactNewsBuffer: 30
+    highImpactNewsBuffer: 30,
+    maxRiskPerTrade: 5,
+    autoCloseOnProfit: false,
+    autoCloseOnLoss: false,
+    profitTarget: 100,
+    stopLossPercentage: 2,
+    trailingStop: false,
+    confirmOrders: true,
+    oneClickTrading: false,
+    showSpread: true,
+    allowHedging: false
   });
 
   const [hasChanges, setHasChanges] = useState(false);
 
   useEffect(() => {
-    fetchUserSettings();
-  }, [fetchUserSettings]);
+    fetchSettings('trading');
+  }, [fetchSettings]);
 
   useEffect(() => {
-    if (userSettings?.trading_preferences) {
-      const prefs = userSettings.trading_preferences;
+    if (tradingPreferences) {
       setTradingForm({
-        defaultLotSize: prefs.default_lot_size || 0.01,
-        maxLotSize: prefs.max_lot_size || 1.0,
-        defaultStopLoss: prefs.default_stop_loss || 50,
-        defaultTakeProfit: prefs.default_take_profit || 100,
-        maxSpread: prefs.max_spread || 3,
-        slippage: prefs.slippage || 2,
-        maxDailyLoss: prefs.max_daily_loss || 1000,
-        maxDailyTrades: prefs.max_daily_trades || 10,
-        riskPerTrade: prefs.risk_per_trade || 2,
-        autoCloseEnabled: prefs.auto_close_enabled || false,
-        autoCloseTime: prefs.auto_close_time || '17:00',
-        weekendCloseEnabled: prefs.weekend_close_enabled || true,
-        trailingStopEnabled: prefs.trailing_stop_enabled || false,
-        trailingStopDistance: prefs.trailing_stop_distance || 20,
-        partialCloseEnabled: prefs.partial_close_enabled || false,
-        partialClosePercent: prefs.partial_close_percent || 50,
-        newsFilterEnabled: prefs.news_filter_enabled || false,
-        highImpactNewsBuffer: prefs.high_impact_news_buffer || 30
+        defaultOrderType: tradingPreferences.defaultOrderType || 'market',
+        defaultLotSize: tradingPreferences.defaultLotSize || 0.01,
+        maxLotSize: tradingPreferences.maxLotSize || 1.0,
+        defaultStopLoss: tradingPreferences.defaultStopLoss || 50,
+        defaultTakeProfit: tradingPreferences.defaultTakeProfit || 100,
+        maxSpread: tradingPreferences.maxSpread || 3,
+        slippage: tradingPreferences.slippage || 2,
+        maxDailyLoss: tradingPreferences.maxDailyLoss || 1000,
+        maxDailyTrades: tradingPreferences.maxDailyTrades || 10,
+        riskPerTrade: tradingPreferences.riskPerTrade || 2,
+        autoCloseEnabled: tradingPreferences.autoCloseEnabled || false,
+        autoCloseTime: tradingPreferences.autoCloseTime || '17:00',
+        weekendCloseEnabled: tradingPreferences.weekendCloseEnabled || true,
+        trailingStopEnabled: tradingPreferences.trailingStopEnabled || false,
+        trailingStopDistance: tradingPreferences.trailingStopDistance || 20,
+        partialCloseEnabled: tradingPreferences.partialCloseEnabled || false,
+        partialClosePercent: tradingPreferences.partialClosePercent || 50,
+        newsFilterEnabled: tradingPreferences.newsFilterEnabled || false,
+        highImpactNewsBuffer: tradingPreferences.highImpactNewsBuffer || 30,
+        maxRiskPerTrade: tradingPreferences.maxRiskPerTrade || 5,
+        autoCloseOnProfit: tradingPreferences.autoCloseOnProfit || false,
+        autoCloseOnLoss: tradingPreferences.autoCloseOnLoss || false,
+        profitTarget: tradingPreferences.profitTarget || 100,
+        stopLossPercentage: tradingPreferences.stopLossPercentage || 2,
+        trailingStop: tradingPreferences.trailingStop || false,
+        confirmOrders: tradingPreferences.confirmOrders || true,
+        oneClickTrading: tradingPreferences.oneClickTrading || false,
+        showSpread: tradingPreferences.showSpread || true,
+        allowHedging: tradingPreferences.allowHedging || false
       });
     }
-  }, [userSettings]);
+  }, [tradingPreferences]);
 
   useEffect(() => {
     if (error) {
@@ -99,24 +120,35 @@ const TradingPreferences: React.FC = () => {
     
     try {
       await updateTradingPreferences({
-        default_lot_size: tradingForm.defaultLotSize,
-        max_lot_size: tradingForm.maxLotSize,
-        default_stop_loss: tradingForm.defaultStopLoss,
-        default_take_profit: tradingForm.defaultTakeProfit,
-        max_spread: tradingForm.maxSpread,
+        defaultOrderType: tradingForm.defaultOrderType,
+        defaultLotSize: tradingForm.defaultLotSize,
+        maxLotSize: tradingForm.maxLotSize,
+        defaultStopLoss: tradingForm.defaultStopLoss,
+        defaultTakeProfit: tradingForm.defaultTakeProfit,
+        maxSpread: tradingForm.maxSpread,
         slippage: tradingForm.slippage,
-        max_daily_loss: tradingForm.maxDailyLoss,
-        max_daily_trades: tradingForm.maxDailyTrades,
-        risk_per_trade: tradingForm.riskPerTrade,
-        auto_close_enabled: tradingForm.autoCloseEnabled,
-        auto_close_time: tradingForm.autoCloseTime,
-        weekend_close_enabled: tradingForm.weekendCloseEnabled,
-        trailing_stop_enabled: tradingForm.trailingStopEnabled,
-        trailing_stop_distance: tradingForm.trailingStopDistance,
-        partial_close_enabled: tradingForm.partialCloseEnabled,
-        partial_close_percent: tradingForm.partialClosePercent,
-        news_filter_enabled: tradingForm.newsFilterEnabled,
-        high_impact_news_buffer: tradingForm.highImpactNewsBuffer
+        maxDailyLoss: tradingForm.maxDailyLoss,
+        maxDailyTrades: tradingForm.maxDailyTrades,
+        riskPerTrade: tradingForm.riskPerTrade,
+        autoCloseEnabled: tradingForm.autoCloseEnabled,
+        autoCloseTime: tradingForm.autoCloseTime,
+        weekendCloseEnabled: tradingForm.weekendCloseEnabled,
+        trailingStopEnabled: tradingForm.trailingStopEnabled,
+        trailingStopDistance: tradingForm.trailingStopDistance,
+        partialCloseEnabled: tradingForm.partialCloseEnabled,
+        partialClosePercent: tradingForm.partialClosePercent,
+        newsFilterEnabled: tradingForm.newsFilterEnabled,
+        highImpactNewsBuffer: tradingForm.highImpactNewsBuffer,
+        maxRiskPerTrade: tradingForm.maxRiskPerTrade,
+        autoCloseOnProfit: tradingForm.autoCloseOnProfit,
+        autoCloseOnLoss: tradingForm.autoCloseOnLoss,
+        profitTarget: tradingForm.profitTarget,
+        stopLossPercentage: tradingForm.stopLossPercentage,
+        trailingStop: tradingForm.trailingStop,
+        confirmOrders: tradingForm.confirmOrders,
+        oneClickTrading: tradingForm.oneClickTrading,
+        showSpread: tradingForm.showSpread,
+        allowHedging: tradingForm.allowHedging
       });
       toast.success('Trading preferences updated successfully');
       setHasChanges(false);
@@ -126,27 +158,37 @@ const TradingPreferences: React.FC = () => {
   };
 
   const handleReset = () => {
-    if (userSettings?.trading_preferences) {
-      const prefs = userSettings.trading_preferences;
+    if (tradingPreferences) {
       setTradingForm({
-        defaultLotSize: prefs.default_lot_size || 0.01,
-        maxLotSize: prefs.max_lot_size || 1.0,
-        defaultStopLoss: prefs.default_stop_loss || 50,
-        defaultTakeProfit: prefs.default_take_profit || 100,
-        maxSpread: prefs.max_spread || 3,
-        slippage: prefs.slippage || 2,
-        maxDailyLoss: prefs.max_daily_loss || 1000,
-        maxDailyTrades: prefs.max_daily_trades || 10,
-        riskPerTrade: prefs.risk_per_trade || 2,
-        autoCloseEnabled: prefs.auto_close_enabled || false,
-        autoCloseTime: prefs.auto_close_time || '17:00',
-        weekendCloseEnabled: prefs.weekend_close_enabled || true,
-        trailingStopEnabled: prefs.trailing_stop_enabled || false,
-        trailingStopDistance: prefs.trailing_stop_distance || 20,
-        partialCloseEnabled: prefs.partial_close_enabled || false,
-        partialClosePercent: prefs.partial_close_percent || 50,
-        newsFilterEnabled: prefs.news_filter_enabled || false,
-        highImpactNewsBuffer: prefs.high_impact_news_buffer || 30
+        defaultOrderType: tradingPreferences.defaultOrderType || 'market',
+        defaultLotSize: tradingPreferences.defaultLotSize || 0.01,
+        maxLotSize: tradingPreferences.maxLotSize || 1.0,
+        defaultStopLoss: tradingPreferences.defaultStopLoss || 50,
+        defaultTakeProfit: tradingPreferences.defaultTakeProfit || 100,
+        maxSpread: tradingPreferences.maxSpread || 3,
+        slippage: tradingPreferences.slippage || 2,
+        maxDailyLoss: tradingPreferences.maxDailyLoss || 1000,
+        maxDailyTrades: tradingPreferences.maxDailyTrades || 10,
+        riskPerTrade: tradingPreferences.riskPerTrade || 2,
+        autoCloseEnabled: tradingPreferences.autoCloseEnabled || false,
+        autoCloseTime: tradingPreferences.autoCloseTime || '17:00',
+        weekendCloseEnabled: tradingPreferences.weekendCloseEnabled || true,
+        trailingStopEnabled: tradingPreferences.trailingStopEnabled || false,
+        trailingStopDistance: tradingPreferences.trailingStopDistance || 20,
+        partialCloseEnabled: tradingPreferences.partialCloseEnabled || false,
+        partialClosePercent: tradingPreferences.partialClosePercent || 50,
+        newsFilterEnabled: tradingPreferences.newsFilterEnabled || false,
+        highImpactNewsBuffer: tradingPreferences.highImpactNewsBuffer || 30,
+        maxRiskPerTrade: tradingPreferences.maxRiskPerTrade || 5,
+        autoCloseOnProfit: tradingPreferences.autoCloseOnProfit || false,
+        autoCloseOnLoss: tradingPreferences.autoCloseOnLoss || false,
+        profitTarget: tradingPreferences.profitTarget || 100,
+        stopLossPercentage: tradingPreferences.stopLossPercentage || 2,
+        trailingStop: tradingPreferences.trailingStop || false,
+        confirmOrders: tradingPreferences.confirmOrders || true,
+        oneClickTrading: tradingPreferences.oneClickTrading || false,
+        showSpread: tradingPreferences.showSpread || true,
+        allowHedging: tradingPreferences.allowHedging || false
       });
     }
     setHasChanges(false);

@@ -1,160 +1,134 @@
-import React, { useState, useEffect } from 'react';
-import { cn } from '@/lib/utils';
-// import { Badge } from '@/components/ui/badge';
-
-// Custom Badge component
-const Badge = ({ children, variant, className }: {
-  children: React.ReactNode;
-  variant?: string;
-  className?: string;
-}) => (
-  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-    variant === 'destructive' ? 'bg-red-500 text-white' :
-    variant === 'outline' ? 'border' : 'bg-gray-700'
-  } ${className}`}>
-    {children}
-  </span>
-);
-import {
-  TrendingUp,
-  BarChart3,
-  History,
-  Settings,
-  Plus,
-  Wallet,
-  Bell,
-  User,
-  Home,
-  Activity,
-} from 'lucide-react';
-import { useOrderStore } from '@/store/useOrderStore';
-import { usePositionStore } from '@/store/usePositionStore';
-import { useHistoryStore } from '@/store/useHistoryStore';
+import React from 'react';
+import { Home, TrendingUp, PieChart, BarChart3, Settings, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
 
 interface MobileNavigationProps {
   activeTab: string;
   onTabChange: (tab: string) => void;
-  className?: string;
+  badges?: {
+    positions?: number;
+    orders?: number;
+  };
 }
 
-const MobileNavigation: React.FC<MobileNavigationProps> = ({
-  activeTab,
-  onTabChange,
-  className,
+const MobileNavigation: React.FC<MobileNavigationProps> = ({ 
+  activeTab, 
+  onTabChange, 
+  badges = {} 
 }) => {
-  const { pendingOrders } = useOrderStore();
-  const { positions } = usePositionStore();
-  const { tradeHistory } = useHistoryStore();
-  const [notifications, setNotifications] = useState(0);
-
-  // Simulate notifications (in real app, this would come from a notification store)
-  useEffect(() => {
-    const interval = setInterval(() => {
-      // Random notification updates for demo
-      if (Math.random() > 0.8) {
-        setNotifications(prev => prev + 1);
-      }
-    }, 30000);
-
-    return () => clearInterval(interval);
-  }, []);
-
   const tabs = [
-    {
-      id: 'dashboard',
-      label: 'Dashboard',
-      icon: Home,
-      badge: null,
-    },
-    {
-      id: 'positions',
-      label: 'Positions',
-      icon: TrendingUp,
-      badge: positions.length || null,
-    },
-    {
-      id: 'orders',
-      label: 'Orders',
-      icon: Plus,
-      badge: pendingOrders.length || null,
-    },
-    {
-      id: 'history',
-      label: 'History',
-      icon: History,
-      badge: null,
-    },
-    {
-      id: 'analytics',
-      label: 'Analytics',
-      icon: BarChart3,
-      badge: null,
-    },
+    { id: 'dashboard', label: 'Dashboard', icon: Home },
+    { id: 'trading', label: 'Trading', icon: TrendingUp },
+    { id: 'portfolio', label: 'Portfolio', icon: PieChart },
+    { id: 'analysis', label: 'Analysis', icon: BarChart3 },
+    { id: 'settings', label: 'Settings', icon: Settings },
   ];
 
   const handleTabPress = (tabId: string) => {
-    // Add haptic feedback for mobile devices
+    // Haptic feedback for supported devices
     if ('vibrate' in navigator) {
-      navigator.vibrate(50);
+      navigator.vibrate([10]); // Short, subtle vibration
     }
     onTabChange(tabId);
   };
 
-  return (
-    <div className={cn(
-      "fixed bottom-0 left-0 right-0 z-50 bg-gray-900/95 backdrop-blur-sm border-t border-gray-700",
-      "safe-area-pb", // Handles iPhone home indicator
-      className
-    )}>
-      {/* Tab Bar */}
-      <div className="flex items-center justify-around px-2 py-2">
-        {tabs.map((tab) => {
-          const Icon = tab.icon;
-          const isActive = activeTab === tab.id;
-          
-          return (
-            <button
-              key={tab.id}
-              onClick={() => handleTabPress(tab.id)}
-              className={cn(
-                "flex flex-col items-center justify-center min-w-0 flex-1 py-2 px-1 rounded-lg transition-all duration-200",
-                "active:scale-95 active:bg-gray-700/50", // Touch feedback
-                isActive 
-                  ? "text-blue-400 bg-blue-500/10" 
-                  : "text-gray-400 hover:text-gray-300 hover:bg-gray-800/50"
-              )}
-            >
-              <div className="relative">
-                <Icon className={cn(
-                  "h-5 w-5 mb-1 transition-all duration-200",
-                  isActive && "scale-110"
-                )} />
-                
-                {/* Badge for notifications/counts */}
-                {tab.badge && tab.badge > 0 && (
-                  <Badge 
-                    variant="destructive"
-                    className="absolute -top-2 -right-2 h-4 w-4 p-0 text-xs flex items-center justify-center min-w-4"
-                  >
-                    {tab.badge > 99 ? '99+' : tab.badge}
-                  </Badge>
-                )}
-              </div>
-              
-              <span className={cn(
-                "text-xs font-medium truncate max-w-full transition-all duration-200",
-                isActive ? "text-blue-400" : "text-gray-400"
-              )}>
-                {tab.label}
-              </span>
-            </button>
-          );
-        })}
-      </div>
+  const handleQuickAction = () => {
+    // Haptic feedback for quick action
+    if ('vibrate' in navigator) {
+      navigator.vibrate([20]); // Slightly longer vibration for action
+    }
+    onTabChange('quick-trade');
+  };
 
-      {/* Active Tab Indicator */}
-      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gradient-to-r from-transparent via-blue-500 to-transparent opacity-50" />
-    </div>
+  return (
+    <>
+      {/* Bottom Tab Navigation */}
+      <motion.div 
+        className="fixed bottom-0 left-0 right-0 bg-gray-900/95 backdrop-blur-md border-t border-gray-700/50 z-50 bottom-nav-safe"
+        initial={{ y: 100 }}
+        animate={{ y: 0 }}
+        transition={{ type: "spring", stiffness: 300, damping: 30 }}
+      >
+        <div className="flex justify-around items-center py-2 px-2 relative">
+          {tabs.map((tab, index) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            const badge = tab.id === 'trading' ? badges.positions : 
+                         tab.id === 'portfolio' ? badges.orders : undefined;
+            
+            return (
+              <motion.button
+                key={tab.id}
+                onClick={() => handleTabPress(tab.id)}
+                className={`touch-button relative flex flex-col items-center justify-center p-2 rounded-xl transition-all duration-200 ${
+                  isActive 
+                    ? 'text-blue-400 bg-blue-400/10 scale-105' 
+                    : 'text-gray-400 hover:text-gray-300 active:scale-95'
+                }`}
+                whileTap={{ scale: 0.9 }}
+                whileHover={{ scale: 1.05 }}
+              >
+                <div className="relative">
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  {badge && badge > 0 && (
+                    <motion.div 
+                      className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full min-w-[18px] h-[18px] flex items-center justify-center"
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: "spring", stiffness: 500 }}
+                    >
+                      {badge > 99 ? '99+' : badge}
+                    </motion.div>
+                  )}
+                </div>
+                <span className={`text-xs mt-1 font-medium ${
+                  isActive ? 'text-blue-400' : 'text-gray-500'
+                }`}>
+                  {tab.label}
+                </span>
+                {isActive && (
+                  <motion.div 
+                    className="absolute -bottom-1 left-1/2 w-1 h-1 bg-blue-400 rounded-full"
+                    layoutId="activeIndicator"
+                    initial={false}
+                    transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                    style={{ x: '-50%' }}
+                  />
+                )}
+              </motion.button>
+            );
+          })}
+        </div>
+      </motion.div>
+
+      {/* Quick Action Floating Button */}
+      <motion.button
+        onClick={handleQuickAction}
+        className="fixed bottom-20 right-4 w-14 h-14 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full shadow-lg flex items-center justify-center z-40"
+        whileTap={{ scale: 0.9 }}
+        whileHover={{ scale: 1.1 }}
+        initial={{ scale: 0, rotate: -180 }}
+        animate={{ scale: 1, rotate: 0 }}
+        transition={{ 
+          type: "spring", 
+          stiffness: 300, 
+          damping: 20,
+          delay: 0.2 
+        }}
+      >
+        <Plus size={24} className="text-white" strokeWidth={2.5} />
+        <motion.div
+          className="absolute inset-0 rounded-full bg-white/20"
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: [0, 1.2, 0], opacity: [0, 0.5, 0] }}
+          transition={{ 
+            duration: 2, 
+            repeat: Infinity, 
+            repeatDelay: 1 
+          }}
+        />
+      </motion.button>
+    </>
   );
 };
 

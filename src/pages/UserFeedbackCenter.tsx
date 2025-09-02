@@ -53,13 +53,16 @@ const UserFeedbackCenter: React.FC = () => {
       id: `feedback-${Date.now()}`,
       userId: 'current-user',
       userName: 'You',
-      userAvatar: 'https://trae-api-sg.mchost.guru/api/ide/v1/text_to_image?prompt=professional%20trader%20avatar%20icon%20blue%20theme&image_size=square',
+      userAvatar: '/api/placeholder/40/40',
+      recommendationId: feedbackForm.strategyId,
       strategyId: feedbackForm.strategyId,
-      strategyName: strategies.find(s => s.id === feedbackForm.strategyId)?.name || '',
+      strategyName: strategies.find(s => s.id === feedbackForm.strategyId)?.name || 'Unknown Strategy',
       rating: feedbackForm.rating,
       comment: feedbackForm.comment,
+      comments: feedbackForm.comment,
       category: feedbackForm.category,
-      createdAt: new Date().toISOString(),
+      implemented: false,
+      createdAt: new Date(),
       helpfulCount: 0,
       isVerified: false
     };
@@ -201,7 +204,7 @@ const UserFeedbackCenter: React.FC = () => {
               <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 text-center">
                 <div className="text-3xl font-bold text-slate-900 mb-2">{getAverageRating()}</div>
                 <div className="flex justify-center mb-2">
-                  {renderStars(Math.round(parseFloat(getAverageRating())))}
+                  {renderStars(Math.round(parseFloat(getAverageRating() || '0')))}
                 </div>
                 <p className="text-sm text-slate-600">{userFeedback.length} total reviews</p>
               </div>
