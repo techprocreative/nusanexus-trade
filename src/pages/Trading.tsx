@@ -98,7 +98,7 @@ const ResizeHandle: React.FC = () => {
   );
 };
 
-export const Trading: React.FC = () => {
+const Trading: React.FC = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [audioEnabled, setAudioEnabled] = useState(true);
   const [showAudioSettings, setShowAudioSettings] = useState(false);
@@ -402,3 +402,5 @@ export const Trading: React.FC = () => {
     </TradingLayout>
   );
 };
+
+export default Trading;

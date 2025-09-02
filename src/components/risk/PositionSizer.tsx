@@ -8,16 +8,45 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Slider } from '@/components/ui/slider';
+// Custom UI Components
+const Label: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <label className={className}>{children}</label>
+);
+
+const Select: React.FC<{ children: React.ReactNode; value?: string; onValueChange?: (value: string) => void }> = ({ children }) => (
+  <div className="relative">{children}</div>
+);
+
+const SelectTrigger: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <div className={className}>{children}</div>
+);
+
+const SelectValue: React.FC<{ placeholder?: string }> = ({ placeholder }) => (
+  <span>{placeholder}</span>
+);
+
+const SelectContent: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <div className={className}>{children}</div>
+);
+
+const SelectItem: React.FC<{ children: React.ReactNode; value: string }> = ({ children }) => (
+  <div>{children}</div>
+);
+
+const Badge: React.FC<{ children: React.ReactNode; className?: string }> = ({ children, className }) => (
+  <span className={className}>{children}</span>
+);
+
+const Slider: React.FC<{ value: number[]; onValueChange: (value: number[]) => void; min?: number; max?: number; step?: number; className?: string }> = ({ value, onValueChange, min = 0, max = 100, className }) => (
+  <input
+    type="range"
+    min={min}
+    max={max}
+    value={value[0]}
+    onChange={(e) => onValueChange([parseFloat(e.target.value)])}
+    className={className}
+  />
+);
 import {
   Calculator,
   TrendingUp,
@@ -305,7 +334,6 @@ const PositionSizer: React.FC<PositionSizerProps> = ({
                 <Label className="text-xs text-gray-400">Desired Lot Size</Label>
                 <Input
                   type="number"
-                  step="0.01"
                   value={desiredLots}
                   onChange={(e) => setDesiredLots(parseFloat(e.target.value) || 0)}
                   className="mt-1 h-8 bg-gray-700 border-gray-600 text-white text-sm"

@@ -55,7 +55,7 @@ const DraggableComponent: React.FC<DraggableComponentProps> = ({ component }) =>
 interface CategorySectionProps {
   title: string;
   category: string;
-  icon: React.ComponentType<{ size?: number; className?: string }>;
+  icon: React.ComponentType<any>;
   color: string;
 }
 

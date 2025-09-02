@@ -50,15 +50,24 @@ export interface TrailingStop {
 // Order Form Validation
 export interface OrderFormData {
   symbol: string;
-  orderType: OrderType;
+  orderType?: OrderType;
+  type?: OrderType;
   side: OrderSide;
   volume: number;
+  quantity?: number;
   price?: number;
+  stopPrice?: number;
   stopLoss?: number;
   takeProfit?: number;
   riskPercentage?: number;
   expiration?: Date;
   comment?: string;
+  trailingAmount?: number;
+  reduceOnly?: boolean;
+  postOnly?: boolean;
+  timeInForce?: string;
+  expiry?: Date;
+  trailingStop?: boolean;
 }
 
 export interface ValidationError {
@@ -85,6 +94,14 @@ export interface RiskCalculation {
   potentialProfit: number;
   potentialLoss: number;
   riskRewardRatio: number;
+  positionValue: number;
+  maxProfit: number;
+  maxLoss: number;
+  riskLevel: 'low' | 'medium' | 'high';
+  requiredMargin: number;
+  pipValue: number;
+  maxRisk: number;
+  accountRiskPercentage: number;
 }
 
 // Trade History & Analytics
@@ -102,6 +119,8 @@ export interface TradeHistory {
   openTime: Date;
   closeTime: Date;
   duration: number;
+  stopLoss?: number;
+  takeProfit?: number;
   comment?: string;
 }
 
@@ -181,6 +200,8 @@ export interface HistoryFilters {
   minPnL?: number;
   maxPnL?: number;
   orderType?: OrderType;
+  profitability?: 'all' | 'profitable' | 'losing';
+  dateRange?: '7d' | '30d' | '90d' | '1y' | 'all';
 }
 
 export interface PaginationState {
@@ -260,6 +281,24 @@ export interface ExportOptions {
   };
   columns?: string[];
   filters?: Record<string, any>;
+}
+
+// Position Sizing Types
+export interface PositionSizing {
+  symbol: string;
+  side: OrderSide;
+  entryPrice: number;
+  stopLoss: number;
+  takeProfit: number;
+  positionSize: number;
+  riskAmount: number;
+  potentialProfit: number;
+  potentialLoss: number;
+  riskRewardRatio: number;
+  marginRequired: number;
+  stopLossPips: number;
+  takeProfitPips: number;
+  pipValue: number;
 }
 
 // Chart Data Types

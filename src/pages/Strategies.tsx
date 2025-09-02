@@ -253,7 +253,7 @@ const CreateStrategyModal: React.FC<{
   );
 };
 
-export const Strategies: React.FC = () => {
+const Strategies: React.FC = () => {
   const navigate = useNavigate();
   const strategies = useStrategies();
   const { addStrategy, updateStrategy, removeStrategy } = useTradingStore();
@@ -463,3 +463,5 @@ export const Strategies: React.FC = () => {
     </div>
   );
 };
+
+export default Strategies;

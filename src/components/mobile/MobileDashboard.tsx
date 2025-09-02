@@ -1,20 +1,91 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+// import {
+//   Card,
+//   CardContent,
+//   CardHeader,
+//   CardTitle,
+// } from '@/components/ui/card';
+// import { Button } from '@/components/ui/button';
+// import { Badge } from '@/components/ui/badge';
+// import {
+//   Sheet,
+//   SheetContent,
+//   SheetDescription,
+//   SheetHeader,
+//   SheetTitle,
+// } from '@/components/ui/sheet';
+
+// Custom UI components
+const Card = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`rounded-lg border ${className}`}>{children}</div>
+);
+const CardHeader = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`p-6 pb-4 ${className || ''}`}>{children}</div>
+);
+const CardTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <h3 className={`text-lg font-semibold ${className}`}>{children}</h3>
+);
+const CardContent = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`p-6 pt-0 ${className}`}>{children}</div>
+);
+const Button = ({ children, onClick, variant, size, className }: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: string;
+  size?: string;
+  className?: string;
+}) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+      variant === 'outline' ? 'border border-gray-600 bg-transparent hover:bg-gray-700' : 
+      variant === 'ghost' ? 'bg-transparent hover:bg-gray-700' :
+      'bg-blue-600 hover:bg-blue-700'
+    } ${size === 'sm' ? 'px-2 py-1 text-sm' : ''} ${className}`}
+  >
+    {children}
+  </button>
+);
+const Badge = ({ children, variant, className }: {
+  children: React.ReactNode;
+  variant?: string;
+  className?: string;
+}) => (
+  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+    variant === 'outline' ? 'border' : 'bg-gray-700'
+  } ${className}`}>
+    {children}
+  </span>
+);
+const Sheet = ({ children, open, onOpenChange }: {
+  children: React.ReactNode;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}) => (
+  <div className={`fixed inset-0 z-50 ${open ? 'block' : 'hidden'}`}>
+    <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange(false)} />
+    {children}
+  </div>
+);
+const SheetContent = ({ children, side, className }: {
+  children: React.ReactNode;
+  side?: string;
+  className?: string;
+}) => (
+  <div className={`fixed ${side === 'bottom' ? 'bottom-0 left-0 right-0' : 'right-0 top-0 bottom-0'} ${className}`}>
+    {children}
+  </div>
+);
+const SheetHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="p-4 border-b border-gray-700">{children}</div>
+);
+const SheetTitle = ({ children }: { children: React.ReactNode }) => (
+  <h2 className="text-lg font-semibold">{children}</h2>
+);
+const SheetDescription = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-sm text-gray-400">{children}</p>
+);
 import {
   TrendingUp,
   TrendingDown,
@@ -50,15 +121,15 @@ const MobileDashboard: React.FC = () => {
 
   const { pendingOrders, fetchOrders } = useOrderStore();
   const { positions, fetchPositions } = usePositionStore();
-  const { trades, fetchTrades } = useHistoryStore();
-  const { selectedSymbol, marketData } = useTradingStore();
+  const { tradeHistory, fetchTradeHistory } = useHistoryStore();
+  const { selectedSymbol } = useTradingStore();
 
   useEffect(() => {
     // Initial data fetch
     fetchOrders();
     fetchPositions();
-    fetchTrades();
-  }, [fetchOrders, fetchPositions, fetchTrades]);
+    fetchTradeHistory();
+  }, [fetchOrders, fetchPositions, fetchTradeHistory]);
 
   const handleRefresh = async () => {
     setRefreshing(true);
@@ -66,7 +137,7 @@ const MobileDashboard: React.FC = () => {
       await Promise.all([
         fetchOrders(),
         fetchPositions(),
-        fetchTrades(),
+        fetchTradeHistory(),
       ]);
     } finally {
       setRefreshing(false);
@@ -126,20 +197,20 @@ const MobileDashboard: React.FC = () => {
 const DashboardContent: React.FC = () => {
   const { positions } = usePositionStore();
   const { pendingOrders } = useOrderStore();
-  const { trades } = useHistoryStore();
+  const { tradeHistory } = useHistoryStore();
   const [balanceVisible, setBalanceVisible] = useState(true);
 
   // Calculate summary statistics
-  const openPositions = positions.filter(p => p.status === 'open');
-  const totalPnL = openPositions.reduce((sum, p) => sum + p.unrealizedPnL, 0);
+  const openPositions = positions;
+  const totalPnL = openPositions.reduce((sum, p) => sum + p.pnl, 0);
   const totalEquity = 10000 + totalPnL; // Mock account balance
   const marginUsed = openPositions.reduce((sum, p) => sum + (p.volume * 1000), 0);
   const freeMargin = totalEquity - marginUsed;
   const marginLevel = marginUsed > 0 ? (totalEquity / marginUsed) * 100 : 0;
 
   // Recent trades for quick view
-  const recentTrades = trades.slice(0, 3);
-  const todayTrades = trades.filter(t => {
+  const recentTrades = tradeHistory.slice(0, 3);
+  const todayTrades = tradeHistory.filter(t => {
     const today = new Date();
     const tradeDate = new Date(t.closeTime);
     return tradeDate.toDateString() === today.toDateString();
@@ -307,9 +378,9 @@ const DashboardContent: React.FC = () => {
                     <div className="text-right">
                       <p className={cn(
                         "text-sm font-bold",
-                        position.unrealizedPnL >= 0 ? "text-green-400" : "text-red-400"
+                        position.pnl >= 0 ? "text-green-400" : "text-red-400"
                       )}>
-                        {formatCurrency(position.unrealizedPnL)}
+                        {formatCurrency(position.pnl)}
                       </p>
                       <p className="text-xs text-gray-400">{position.currentPrice.toFixed(5)}</p>
                     </div>
@@ -358,7 +429,7 @@ const DashboardContent: React.FC = () => {
 // Positions Content Component
 const PositionsContent: React.FC = () => {
   const { positions, filteredPositions } = usePositionStore();
-  const openPositions = positions.filter(p => p.status === 'open');
+  const openPositions = positions;
 
   return (
     <div className="flex-1 overflow-y-auto p-4 pb-24 space-y-3">
@@ -424,7 +495,7 @@ const OrdersContent: React.FC = () => {
                     <span className="text-sm font-medium text-white">{order.symbol}</span>
                   </div>
                   <Badge variant="secondary" className="text-xs">
-                    {order.type}
+                    {order.orderType}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-2 gap-4 text-sm">
@@ -448,17 +519,17 @@ const OrdersContent: React.FC = () => {
 
 // Analytics Content Component
 const AnalyticsContent: React.FC = () => {
-  const { trades } = useHistoryStore();
+  const { tradeHistory } = useHistoryStore();
   const { positions } = usePositionStore();
 
   // Calculate analytics
-  const totalTrades = trades.length;
-  const winningTrades = trades.filter(t => t.pnl > 0).length;
+  const totalTrades = tradeHistory.length;
+  const winningTrades = tradeHistory.filter(t => t.pnl > 0).length;
   const winRate = totalTrades > 0 ? (winningTrades / totalTrades) * 100 : 0;
-  const totalPnL = trades.reduce((sum, t) => sum + t.pnl, 0);
+  const totalPnL = tradeHistory.reduce((sum, t) => sum + t.pnl, 0);
   const avgPnL = totalTrades > 0 ? totalPnL / totalTrades : 0;
-  const bestTrade = trades.length > 0 ? Math.max(...trades.map(t => t.pnl)) : 0;
-  const worstTrade = trades.length > 0 ? Math.min(...trades.map(t => t.pnl)) : 0;
+  const bestTrade = tradeHistory.length > 0 ? Math.max(...tradeHistory.map(t => t.pnl)) : 0;
+  const worstTrade = tradeHistory.length > 0 ? Math.min(...tradeHistory.map(t => t.pnl)) : 0;
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -569,7 +640,7 @@ const AnalyticsContent: React.FC = () => {
             </div>
             <div className="flex justify-between">
               <span className="text-sm text-gray-400">Open Positions</span>
-              <span className="text-sm text-white font-medium">{positions.filter(p => p.status === 'open').length}</span>
+              <span className="text-sm text-white font-medium">{positions.length}</span>
             </div>
           </div>
         </CardContent>

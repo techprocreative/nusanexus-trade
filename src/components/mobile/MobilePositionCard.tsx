@@ -7,23 +7,83 @@ import {
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from '@/components/ui/alert-dialog';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+// Custom Alert Dialog components
+const AlertDialog = ({ children, open, onOpenChange }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) => (
+  <div className={`fixed inset-0 z-50 ${open ? 'block' : 'hidden'}`}>
+    <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange?.(false)} />
+    <div className="fixed inset-0 flex items-center justify-center p-4">
+      <div className="bg-gray-900 rounded-lg shadow-lg max-w-md w-full">
+        {children}
+      </div>
+    </div>
+  </div>
+);
+
+const AlertDialogTrigger = ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => (
+  <div>{children}</div>
+);
+
+const AlertDialogContent = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`p-6 ${className || ''}`}>{children}</div>
+);
+
+const AlertDialogHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="mb-4">{children}</div>
+);
+
+const AlertDialogTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <h2 className={`text-lg font-semibold ${className || 'text-white'}`}>{children}</h2>
+);
+
+const AlertDialogDescription = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <p className={`text-sm mt-2 ${className || 'text-gray-400'}`}>{children}</p>
+);
+
+const AlertDialogFooter = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex justify-end space-x-2 mt-6">{children}</div>
+);
+
+const AlertDialogAction = ({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) => (
+  <button className={`px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 ${className || ''}`} onClick={onClick}>
+    {children}
+  </button>
+);
+
+const AlertDialogCancel = ({ children, onClick, className }: { children: React.ReactNode; onClick?: () => void; className?: string }) => (
+  <button className={`px-4 py-2 bg-gray-600 text-white rounded hover:bg-gray-700 ${className || ''}`} onClick={onClick}>
+    {children}
+  </button>
+);
+
+// Custom Sheet components
+const Sheet = ({ children, open, onOpenChange }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) => (
+  <div className={`fixed inset-0 z-50 ${open ? 'block' : 'hidden'}`}>
+    <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange?.(false)} />
+    <div className="fixed right-0 top-0 h-full w-80 bg-gray-900 shadow-lg">
+      {children}
+    </div>
+  </div>
+);
+
+const SheetTrigger = ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => (
+  <div>{children}</div>
+);
+
+const SheetContent = ({ children, side, className }: { children: React.ReactNode; side?: string; className?: string }) => (
+  <div className={`p-6 ${className || ''}`}>{children}</div>
+);
+
+const SheetHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="mb-4">{children}</div>
+);
+
+const SheetTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <h2 className={`text-lg font-semibold ${className || 'text-white'}`}>{children}</h2>
+);
+
+const SheetDescription = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <p className={`text-sm ${className || 'text-gray-400'}`}>{children}</p>
+);
 import {
   TrendingUp,
   TrendingDown,
@@ -253,7 +313,7 @@ const MobilePositionCard: React.FC<MobilePositionCardProps> = ({
                 <div>
                   <h3 className="font-semibold text-white">{position.symbol}</h3>
                   <p className="text-xs text-gray-400">
-                    {position.volume} lots • {formatTime(position.openTime)}
+                    {position.volume} lots • {formatTime(position.openTime.getTime())}
                   </p>
                 </div>
               </div>
@@ -274,14 +334,14 @@ const MobilePositionCard: React.FC<MobilePositionCardProps> = ({
             <div className="grid grid-cols-2 gap-4 mb-3">
               <div className={cn(
                 "p-3 rounded-lg border",
-                getPnLBgColor(position.unrealizedPnl)
+                getPnLBgColor(position.pnl)
               )}>
                 <div className="flex items-center space-x-2">
-                  <DollarSign className={cn("h-4 w-4", getPnLColor(position.unrealizedPnl))} />
+                  <DollarSign className={cn("h-4 w-4", getPnLColor(position.pnl))} />
                   <div>
                     <p className="text-xs text-gray-400">P&L</p>
-                    <p className={cn("text-sm font-bold", getPnLColor(position.unrealizedPnl))}>
-                      {formatCurrency(position.unrealizedPnl)}
+                    <p className={cn("text-sm font-bold", getPnLColor(position.pnl))}>
+                      {formatCurrency(position.pnl)}
                     </p>
                   </div>
                 </div>
@@ -348,7 +408,7 @@ const MobilePositionCard: React.FC<MobilePositionCardProps> = ({
               Are you sure you want to close this {position.symbol} position?
               <br />
               <span className="font-medium">
-                Current P&L: {formatCurrency(position.unrealizedPnl)}
+                Current P&L: {formatCurrency(position.pnl)}
               </span>
             </AlertDialogDescription>
           </AlertDialogHeader>
@@ -393,8 +453,8 @@ const MobilePositionCard: React.FC<MobilePositionCardProps> = ({
                 </div>
                 <div>
                   <p className="text-gray-400">Current P&L</p>
-                  <p className={getPnLColor(position.unrealizedPnl)}>
-                    {formatCurrency(position.unrealizedPnl)}
+                  <p className={getPnLColor(position.pnl)}>
+                    {formatCurrency(position.pnl)}
                   </p>
                 </div>
               </div>

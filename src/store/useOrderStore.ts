@@ -46,6 +46,7 @@ interface OrderState {
   fetchOrders: () => Promise<void>;
   fetchOrderHistory: () => Promise<void>;
   clearError: () => void;
+  clearErrors: () => void;
   resetForm: () => void;
 }
 
@@ -186,6 +187,19 @@ const calculateRiskMetrics = async (order: OrderFormData): Promise<RiskCalculati
   
   const riskRewardRatio = potentialLoss > 0 ? potentialProfit / potentialLoss : 0;
   
+  // Determine risk level based on risk percentage and position size
+  let riskLevel: 'low' | 'medium' | 'high' = 'low';
+  if (riskPercentage > 5 || marginRequired > accountBalance * 0.5) {
+    riskLevel = 'high';
+  } else if (riskPercentage > 2 || marginRequired > accountBalance * 0.2) {
+    riskLevel = 'medium';
+  }
+
+  // Calculate additional risk metrics
+  const pipValue = 10; // Mock pip value for standard lot
+  const maxRisk = accountBalance * 0.1; // 10% max risk
+  const accountRiskPercentage = (riskAmount / accountBalance) * 100;
+
   return {
     positionSize: order.volume || 0,
     riskAmount,
@@ -194,7 +208,15 @@ const calculateRiskMetrics = async (order: OrderFormData): Promise<RiskCalculati
     leverageUsed: leverage,
     potentialProfit,
     potentialLoss,
-    riskRewardRatio
+    riskRewardRatio,
+    positionValue,
+    maxProfit: potentialProfit,
+    maxLoss: potentialLoss,
+    riskLevel,
+    requiredMargin: marginRequired,
+    pipValue,
+    maxRisk,
+    accountRiskPercentage
   };
 };
 
@@ -276,7 +298,8 @@ export const useOrderStore = create<OrderState>()(devtools(
           const newOrder: Order = {
             id: Date.now().toString(),
             ...order,
-            status: order.orderType === 'MARKET' ? 'FILLED' : 'PENDING',
+            orderType: order.orderType || order.type || 'MARKET',
+            status: (order.orderType || order.type) === 'MARKET' ? 'FILLED' : 'PENDING',
             createdAt: new Date(),
             updatedAt: new Date()
           };
@@ -434,6 +457,8 @@ export const useOrderStore = create<OrderState>()(devtools(
     
     // Utility actions
     clearError: () => set({ error: null }),
+    
+    clearErrors: () => set({ error: null, validationResult: null }),
     
     resetForm: () => set({ 
       currentOrder: null, 

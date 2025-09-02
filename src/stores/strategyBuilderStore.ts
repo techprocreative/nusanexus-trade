@@ -532,6 +532,29 @@ export const useStrategyBuilderStore = create<StrategyBuilderStore>()(devtools(
       }
     },
 
+    // Load strategy from library as template
+    loadStrategyAsTemplate: (strategyData: Strategy, customName?: string): void => {
+      try {
+        // Create a new strategy based on the library strategy
+        const templateStrategy: Strategy = {
+          ...strategyData,
+          id: get()._generateId(),
+          name: customName || `${strategyData.name} (Template)`,
+          metadata: {
+            ...strategyData.metadata,
+            created: new Date().toISOString(),
+            modified: new Date().toISOString(),
+            templateSource: strategyData.id, // Track original strategy
+          },
+        };
+
+        // Load the strategy into the builder
+        get().setCurrentStrategy(templateStrategy);
+      } catch (error) {
+        console.error('Failed to load strategy as template:', error);
+      }
+    },
+
     getAllTemplates: () => {
       return TemplateManager.getAllTemplates();
     },

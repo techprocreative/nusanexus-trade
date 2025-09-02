@@ -8,7 +8,12 @@ import {
   Settings, 
   Activity,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Wrench,
+  MessageSquare,
+  BookOpen,
+  Lightbulb,
+  Hammer
 } from 'lucide-react';
 import { useSidebarCollapsed, useUIStore } from '../../store';
 import { cn } from '../../utils/cn';
@@ -30,14 +35,39 @@ const navigationItems = [
     icon: Brain,
   },
   {
+    name: 'Strategy Builder',
+    href: '/strategies/builder',
+    icon: Hammer,
+  },
+  {
     name: 'AI Analysis',
     href: '/ai-analysis',
     icon: Activity,
   },
   {
+    name: 'Interactive Tools',
+    href: '/interactive-tools',
+    icon: Wrench,
+  },
+  {
     name: 'Portfolio',
     href: '/portfolio',
     icon: PieChart,
+  },
+  {
+    name: 'User Feedback',
+    href: '/feedback',
+    icon: MessageSquare,
+  },
+  {
+    name: 'Educational Hub',
+    href: '/education',
+    icon: BookOpen,
+  },
+  {
+    name: 'Implementation',
+    href: '/implementation',
+    icon: Lightbulb,
   },
   {
     name: 'Settings',

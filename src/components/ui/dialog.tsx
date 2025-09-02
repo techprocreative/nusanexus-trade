@@ -24,6 +24,10 @@ interface DialogDescriptionProps extends React.HTMLAttributes<HTMLParagraphEleme
   children: React.ReactNode;
 }
 
+interface DialogFooterProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+}
+
 interface DialogTriggerProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   children: React.ReactNode;
   asChild?: boolean;
@@ -136,12 +140,20 @@ const DialogDescription = React.forwardRef<HTMLParagraphElement, DialogDescripti
   )
 );
 
+const DialogFooter: React.FC<DialogFooterProps> = ({ className, ...props }) => (
+  <div
+    className={cn('flex flex-col-reverse sm:flex-row sm:justify-end sm:space-x-2', className)}
+    {...props}
+  />
+);
+
 Dialog.displayName = 'Dialog';
 DialogTrigger.displayName = 'DialogTrigger';
 DialogContent.displayName = 'DialogContent';
 DialogHeader.displayName = 'DialogHeader';
 DialogTitle.displayName = 'DialogTitle';
 DialogDescription.displayName = 'DialogDescription';
+DialogFooter.displayName = 'DialogFooter';
 
 export {
   Dialog,
@@ -149,7 +161,8 @@ export {
   DialogContent,
   DialogHeader,
   DialogTitle,
-  DialogDescription
+  DialogDescription,
+  DialogFooter
 };
 export type {
   DialogProps,
@@ -157,5 +170,6 @@ export type {
   DialogContentProps,
   DialogHeaderProps,
   DialogTitleProps,
-  DialogDescriptionProps
+  DialogDescriptionProps,
+  DialogFooterProps
 };

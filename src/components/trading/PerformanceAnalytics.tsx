@@ -1,22 +1,80 @@
 import React, { useEffect, useState } from 'react';
 import { useHistoryStore } from '@/store/useHistoryStore';
 import { cn } from '@/lib/utils';
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
+// import {
+//   Card,
+//   CardContent,
+//   CardDescription,
+//   CardHeader,
+//   CardTitle,
+// } from '@/components/ui/card';
+// import { Button } from '@/components/ui/button';
+// import {
+//   Select,
+//   SelectContent,
+//   SelectItem,
+//   SelectTrigger,
+//   SelectValue,
+// } from '@/components/ui/select';
+// import { Badge } from '@/components/ui/badge';
+
+// Custom UI components
+const Card = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`rounded-lg border ${className}`}>{children}</div>
+);
+const CardHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="p-6 pb-4">{children}</div>
+);
+const CardTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <h3 className={`text-lg font-semibold ${className}`}>{children}</h3>
+);
+const CardDescription = ({ children }: { children: React.ReactNode }) => (
+  <p className="text-sm text-gray-400 mt-1">{children}</p>
+);
+const CardContent = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <div className={`p-6 pt-0 ${className}`}>{children}</div>
+);
+const Button = ({ children, onClick, variant, size, className }: {
+  children: React.ReactNode;
+  onClick?: () => void;
+  variant?: string;
+  size?: string;
+  className?: string;
+}) => (
+  <button
+    onClick={onClick}
+    className={`px-4 py-2 rounded-md font-medium transition-colors ${
+      variant === 'outline' ? 'border border-gray-600 bg-transparent hover:bg-gray-700' : 'bg-blue-600 hover:bg-blue-700'
+    } ${className}`}
+  >
+    {children}
+  </button>
+);
+const Select = ({ children, value, onValueChange }: {
+  children: React.ReactNode;
+  value: string;
+  onValueChange: (value: string) => void;
+}) => (
+  <div className="relative">{children}</div>
+);
+const SelectTrigger = ({ children }: { children: React.ReactNode }) => (
+  <div className="flex items-center px-3 py-2 rounded-md cursor-pointer bg-gray-700/50 border border-gray-600 text-white">{children}</div>
+);
+const SelectValue = () => <span>30 Days</span>;
+const SelectContent = ({ children }: { children: React.ReactNode }) => (
+  <div className="absolute top-full left-0 mt-1 rounded-md shadow-lg z-10 bg-gray-800 border border-gray-700">{children}</div>
+);
+const SelectItem = ({ children, value }: { children: React.ReactNode; value: string }) => (
+  <div className="px-3 py-2 hover:bg-gray-700 cursor-pointer">{children}</div>
+);
+const Badge = ({ children, className }: {
+  children: React.ReactNode;
+  className?: string;
+}) => (
+  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-gray-700 ${className || ''}`}>
+    {children}
+  </span>
+);
 import {
   LineChart,
   Line,
@@ -171,11 +229,11 @@ const PerformanceAnalytics: React.FC = () => {
               setAnalysisDateRange({ from, to: now });
             }}
           >
-            <SelectTrigger className="w-32 bg-gray-700/50 border-gray-600 text-white">
+            <SelectTrigger>
               <Calendar className="h-4 w-4 mr-2" />
               <SelectValue />
             </SelectTrigger>
-            <SelectContent className="bg-gray-800 border-gray-700">
+            <SelectContent>
               <SelectItem value="7d">7 Days</SelectItem>
               <SelectItem value="30d">30 Days</SelectItem>
               <SelectItem value="90d">90 Days</SelectItem>
@@ -184,9 +242,7 @@ const PerformanceAnalytics: React.FC = () => {
           </Select>
           <Button
             onClick={handleExportReport}
-            variant="outline"
-            size="sm"
-            className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            className="border border-gray-600 text-gray-300 hover:bg-gray-700 px-3 py-1 text-sm"
           >
             <Download className="h-4 w-4 mr-2" />
             Export Report
@@ -210,7 +266,7 @@ const PerformanceAnalytics: React.FC = () => {
                 <p className="text-green-400 text-sm font-medium">Total P&L</p>
                 <p className={cn(
                   "text-2xl font-bold",
-                  performanceMetrics.totalPnl >= 0 ? "text-green-400" : "text-red-400"
+                  performanceMetrics.totalPnL >= 0 ? "text-green-400" : "text-red-400"
                 )}>
                   {formatCurrency(performanceMetrics.totalPnL)}
                 </p>
@@ -220,9 +276,9 @@ const PerformanceAnalytics: React.FC = () => {
               </div>
               <div className={cn(
                 "p-3 rounded-full",
-                performanceMetrics.totalPnl >= 0 ? "bg-green-500/20" : "bg-red-500/20"
+                performanceMetrics.totalPnL >= 0 ? "bg-green-500/20" : "bg-red-500/20"
               )}>
-                {performanceMetrics.totalPnl >= 0 ? (
+                {performanceMetrics.totalPnL >= 0 ? (
                   <TrendingUp className="h-6 w-6 text-green-400" />
                 ) : (
                   <TrendingDown className="h-6 w-6 text-red-400" />
@@ -304,10 +360,10 @@ const PerformanceAnalytics: React.FC = () => {
                 <CardDescription>Cumulative profit and loss</CardDescription>
               </div>
               <Select value={chartType} onValueChange={(value: any) => setChartType(value)}>
-                <SelectTrigger className="w-32 bg-gray-700/50 border-gray-600 text-white">
+                <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-gray-800 border-gray-700">
+                <SelectContent>
                   <SelectItem value="pnl">P&L</SelectItem>
                   <SelectItem value="volume">Volume</SelectItem>
                   <SelectItem value="winRate">Win Rate</SelectItem>
@@ -529,7 +585,7 @@ const PerformanceAnalytics: React.FC = () => {
             </div>
             <div className="flex justify-between items-center">
               <span className="text-gray-400">Most Traded Symbol</span>
-              <Badge variant="outline" className="border-gray-600 text-gray-300">
+              <Badge className="border border-gray-600 text-gray-300">
                 {performanceMetrics.mostTradedSymbol || 'N/A'}
               </Badge>
             </div>

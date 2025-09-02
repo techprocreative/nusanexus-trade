@@ -12,6 +12,7 @@ import {
   Node,
   ReactFlowProvider,
   useReactFlow,
+  ConnectionMode,
 } from '@xyflow/react';
 import { useDrop } from 'react-dnd';
 import { useStrategyBuilderStore } from '../../stores/strategyBuilderStore';
@@ -177,7 +178,7 @@ const StrategyCanvasInner: React.FC<StrategyCanvasInnerProps> = ({ onNodeSelect 
           fitView
           attributionPosition="bottom-left"
           className="bg-gray-50"
-          connectionMode="Loose"
+          connectionMode={ConnectionMode.Loose}
         >
           <Background 
             color="#e5e7eb" 

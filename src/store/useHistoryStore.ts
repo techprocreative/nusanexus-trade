@@ -195,22 +195,27 @@ const applyHistorySorting = (history: TradeHistory[], sortConfig: SortConfig): T
 const calculateMetrics = (trades: TradeHistory[]): PerformanceMetrics => {
   if (trades.length === 0) {
     return {
-      totalTrades: 0,
-      winningTrades: 0,
-      losingTrades: 0,
-      winRate: 0,
-      totalPnL: 0,
-      averageWin: 0,
-      averageLoss: 0,
-      largestWin: 0,
-      largestLoss: 0,
-      profitFactor: 0,
-      sharpeRatio: 0,
-      maxDrawdown: 0,
-      recoveryFactor: 0,
-      mostTradedSymbol: '',
-      maxConsecutiveWins: 0
-    };
+    totalTrades: 0,
+    winningTrades: 0,
+    losingTrades: 0,
+    winRate: 0,
+    totalPnL: 0,
+    averageWin: 0,
+    averageLoss: 0,
+    largestWin: 0,
+    largestLoss: 0,
+    profitFactor: 0,
+    sharpeRatio: 0,
+    maxDrawdown: 0,
+    recoveryFactor: 0,
+    mostTradedSymbol: '',
+    maxConsecutiveWins: 0,
+    bestTrade: null,
+    worstTrade: null,
+    totalVolume: 0,
+    averageTradeDuration: 0,
+    totalCommission: 0
+  };
   }
   
   const totalTrades = trades.length;
@@ -278,6 +283,16 @@ const calculateMetrics = (trades: TradeHistory[]): PerformanceMetrics => {
     }
   });
   
+  // Calculate additional metrics
+  const bestTrade = trades.length > 0 ? trades.reduce((best, trade) => 
+    trade.pnl > best.pnl ? trade : best).pnl : 0;
+  const worstTrade = trades.length > 0 ? trades.reduce((worst, trade) => 
+    trade.pnl < worst.pnl ? trade : worst).pnl : 0;
+  const totalVolume = trades.reduce((sum, trade) => sum + trade.volume, 0);
+  const averageTradeDuration = trades.length > 0 ? 
+    trades.reduce((sum, trade) => sum + trade.duration, 0) / trades.length : 0;
+  const totalCommission = trades.reduce((sum, trade) => sum + trade.commission, 0);
+  
   return {
     totalTrades,
     winningTrades,
@@ -293,7 +308,12 @@ const calculateMetrics = (trades: TradeHistory[]): PerformanceMetrics => {
     maxDrawdown,
     recoveryFactor,
     mostTradedSymbol,
-    maxConsecutiveWins
+    maxConsecutiveWins,
+    bestTrade,
+    worstTrade,
+    totalVolume,
+    averageTradeDuration,
+    totalCommission
   };
 };
 

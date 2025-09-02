@@ -2,13 +2,95 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Switch } from '@/components/ui/switch';
-import { Slider } from '@/components/ui/slider';
+// import { Label } from '@/components/ui/label';
+// import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+// import { Badge } from '@/components/ui/badge';
+// import { Alert, AlertDescription } from '@/components/ui/alert';
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+// import { Switch } from '@/components/ui/switch';
+// import { Slider } from '@/components/ui/slider';
+
+// Custom UI Components
+const Label = ({ htmlFor, children, className = '' }: { htmlFor?: string; children: React.ReactNode; className?: string }) => (
+  <label htmlFor={htmlFor} className={`block text-sm font-medium text-gray-700 mb-1 ${className}`}>
+    {children}
+  </label>
+);
+
+const Select = ({ value, onValueChange, children }: { value: string; onValueChange: (value: string) => void; children: React.ReactNode }) => (
+  <div className="relative">{children}</div>
+);
+
+const SelectTrigger = ({ children }: { children: React.ReactNode }) => (
+  <div className="w-full px-3 py-2 border border-gray-300 rounded-md bg-white cursor-pointer">
+    {children}
+  </div>
+);
+
+const SelectValue = ({ placeholder }: { placeholder?: string }) => (
+  <span className="text-gray-500">{placeholder}</span>
+);
+
+const SelectContent = ({ children }: { children: React.ReactNode }) => (
+  <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg">
+    {children}
+  </div>
+);
+
+const SelectItem = ({ value, children, onClick }: { value: string; children: React.ReactNode; onClick?: () => void }) => (
+  <div className="px-3 py-2 hover:bg-gray-100 cursor-pointer" onClick={onClick}>
+    {children}
+  </div>
+);
+
+const Badge = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800 ${className}`}>
+    {children}
+  </span>
+);
+
+const Tabs = ({ value, onValueChange, children }: { value: string; onValueChange: (value: string) => void; children: React.ReactNode }) => (
+  <div>{children}</div>
+);
+
+const TabsList = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <div className={`inline-flex h-10 items-center justify-center rounded-md bg-gray-100 p-1 ${className}`}>
+    {children}
+  </div>
+);
+
+const TabsTrigger = ({ value, children, className = '' }: { value: string; children: React.ReactNode; className?: string }) => (
+  <button className={`inline-flex items-center justify-center whitespace-nowrap rounded-sm px-3 py-1.5 text-sm font-medium ${className}`}>
+    {children}
+  </button>
+);
+
+const TabsContent = ({ value, children, className = '' }: { value: string; children: React.ReactNode; className?: string }) => (
+  <div className={`mt-2 ${className}`}>{children}</div>
+);
+
+const Switch = ({ id, checked, onCheckedChange }: { id?: string; checked: boolean; onCheckedChange: (checked: boolean) => void }) => (
+  <button
+    id={id}
+    type="button"
+    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${checked ? 'bg-blue-600' : 'bg-gray-200'}`}
+    onClick={() => onCheckedChange(!checked)}
+  >
+    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${checked ? 'translate-x-6' : 'translate-x-1'}`} />
+  </button>
+);
+
+const Slider = ({ value, onValueChange, min = 0, max = 100, step = 1 }: { value: number[]; onValueChange: (value: number[]) => void; min?: number; max?: number; step?: number }) => (
+  <input
+    type="range"
+    min={min}
+    max={max}
+    step={step}
+    value={value[0]}
+    onChange={(e) => onValueChange([parseFloat(e.target.value)])}
+    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+  />
+);
 import { AlertTriangle, Calculator, TrendingUp, TrendingDown, Clock, Target } from 'lucide-react';
 import { useOrderStore } from '@/store/useOrderStore';
 import { useTradingStore } from '@/store/useTradingStore';
@@ -50,7 +132,7 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
       symbol,
       type: 'MARKET',
       side: 'BUY',
-      quantity: 0.01,
+      volume: 0.01,
       price: 0,
       stopLoss: 0,
       takeProfit: 0,
@@ -65,7 +147,7 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
 
   // Real-time validation and risk calculation
   useEffect(() => {
-    if (currentOrder.symbol && currentOrder.quantity > 0) {
+    if (currentOrder.symbol && currentOrder.volume > 0) {
       validateOrder(currentOrder);
       calculateRisk(currentOrder);
     }
@@ -108,7 +190,6 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
               <Input
                 id="price"
                 type="number"
-                step="0.00001"
                 value={currentOrder.price || ''}
                 onChange={(e) => handleFieldChange('price', parseFloat(e.target.value) || 0)}
                 placeholder="Enter price"
@@ -120,7 +201,6 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
                 <Input
                   id="stopPrice"
                   type="number"
-                  step="0.00001"
                   value={currentOrder.stopPrice || ''}
                   onChange={(e) => handleFieldChange('stopPrice', parseFloat(e.target.value) || 0)}
                   placeholder="Enter stop price"
@@ -202,31 +282,28 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
                   <SelectItem value="LIMIT">Limit Order</SelectItem>
                   <SelectItem value="STOP">Stop Order</SelectItem>
                   <SelectItem value="STOP_LIMIT">Stop Limit</SelectItem>
-                  <SelectItem value="TRAILING_STOP">Trailing Stop</SelectItem>
+                  <SelectItem value="OCO">One Cancels Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
-            {/* Quantity */}
+            {/* Volume */}
             <div>
-              <Label htmlFor="quantity">Quantity (Lots)</Label>
+              <Label htmlFor="volume">Volume (Lots)</Label>
               <div className="space-y-2">
                 <Input
-                  id="quantity"
+                  id="volume"
                   type="number"
-                  step="0.01"
-                  min="0.01"
-                  value={currentOrder.quantity}
-                  onChange={(e) => handleFieldChange('quantity', parseFloat(e.target.value) || 0)}
+                  value={currentOrder.volume}
+                  onChange={(e) => handleFieldChange('volume', parseFloat(e.target.value) || 0)}
                   placeholder="0.01"
                 />
                 <Slider
-                  value={[currentOrder.quantity]}
-                  onValueChange={([value]) => handleFieldChange('quantity', value)}
+                  value={[currentOrder.volume]}
+                  onValueChange={([value]) => handleFieldChange('volume', value)}
                   max={10}
                   min={0.01}
                   step={0.01}
-                  className="w-full"
                 />
               </div>
             </div>
@@ -246,7 +323,6 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
                     <Input
                       id="stopLoss"
                       type="number"
-                      step="0.00001"
                       value={currentOrder.stopLoss || ''}
                       onChange={(e) => handleFieldChange('stopLoss', parseFloat(e.target.value) || 0)}
                       placeholder="Optional"
@@ -257,7 +333,6 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
                     <Input
                       id="takeProfit"
                       type="number"
-                      step="0.00001"
                       value={currentOrder.takeProfit || ''}
                       onChange={(e) => handleFieldChange('takeProfit', parseFloat(e.target.value) || 0)}
                       placeholder="Optional"
@@ -282,13 +357,21 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
                 </div>
 
                 {/* Trailing Stop */}
-                {currentOrder.type === 'TRAILING_STOP' && (
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="trailingStop"
+                    checked={currentOrder.trailingStop || false}
+                    onCheckedChange={(checked) => handleFieldChange('trailingStop', checked)}
+                  />
+                  <Label htmlFor="trailingStop" className="text-sm">Enable Trailing Stop</Label>
+                </div>
+                
+                {currentOrder.trailingStop && (
                   <div>
                     <Label htmlFor="trailingAmount">Trailing Amount</Label>
                     <Input
                       id="trailingAmount"
                       type="number"
-                      step="0.00001"
                       value={currentOrder.trailingAmount || ''}
                       onChange={(e) => handleFieldChange('trailingAmount', parseFloat(e.target.value) || 0)}
                       placeholder="Enter trailing amount"
@@ -337,7 +420,7 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
                     </div>
                     <div>
                       <span className="text-gray-600">Risk Level:</span>
-                      <Badge variant="outline" className={getRiskColor(riskCalculation.riskLevel)}>
+                      <Badge className={getRiskColor(riskCalculation.riskLevel)}>
                         {riskCalculation.riskLevel}
                       </Badge>
                     </div>
@@ -352,16 +435,16 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
 
             {/* Validation Errors */}
             {validationResult && !validationResult.isValid && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <div className="text-sm text-red-800">
                   <ul className="list-disc list-inside space-y-1">
                     {validationResult.errors.map((error, index) => (
                       <li key={index}>{error.message}</li>
                     ))}
                   </ul>
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             )}
 
             {/* Submit Button */}
@@ -379,7 +462,7 @@ export const DynamicOrderForm: React.FC<DynamicOrderFormProps> = ({
                   Processing...
                 </div>
               ) : (
-                `${activeTab} ${currentOrder.quantity} ${currentOrder.symbol}`
+                `${activeTab} ${currentOrder.volume} ${currentOrder.symbol}`
               )}
             </Button>
           </TabsContent>

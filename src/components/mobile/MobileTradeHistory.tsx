@@ -17,14 +17,35 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
+// Custom Sheet components
+const Sheet = ({ children, open, onOpenChange }: { children: React.ReactNode; open?: boolean; onOpenChange?: (open: boolean) => void }) => (
+  <div className={`fixed inset-0 z-50 ${open ? 'block' : 'hidden'}`}>
+    <div className="fixed inset-0 bg-black/50" onClick={() => onOpenChange?.(false)} />
+    <div className="fixed right-0 top-0 h-full w-80 bg-gray-900 shadow-lg">
+      {children}
+    </div>
+  </div>
+);
+
+const SheetContent = ({ children, className = '', side }: { children: React.ReactNode; className?: string; side?: string }) => (
+  <div className={`p-6 ${className}`}>{children}</div>
+);
+
+const SheetHeader = ({ children }: { children: React.ReactNode }) => (
+  <div className="mb-4">{children}</div>
+);
+
+const SheetTitle = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <h2 className={`text-lg font-semibold ${className || 'text-white'}`}>{children}</h2>
+);
+
+const SheetDescription = ({ children, className }: { children: React.ReactNode; className?: string }) => (
+  <p className={`text-sm ${className || 'text-gray-400'}`}>{children}</p>
+);
+
+const SheetTrigger = ({ children, asChild }: { children: React.ReactNode; asChild?: boolean }) => (
+  <div>{children}</div>
+);
 import {
   TrendingUp,
   TrendingDown,
@@ -45,14 +66,14 @@ import { TradeHistory } from '@/types/orderManagement';
 
 const MobileTradeHistory: React.FC = () => {
   const {
-    trades,
-    filteredTrades,
+    tradeHistory: trades,
+    filteredHistory: filteredTrades,
     filters,
-    loading,
+    isLoading: loading,
     error,
-    fetchTrades,
-    updateFilter,
-    exportTrades,
+    fetchTradeHistory: fetchTrades,
+    setFilters: updateFilter,
+    exportHistory: exportTrades,
     clearError,
   } = useHistoryStore();
 
@@ -133,15 +154,22 @@ const MobileTradeHistory: React.FC = () => {
 
   const handleSearch = (value: string) => {
     setSearchTerm(value);
-    updateFilter('symbol', value);
+    updateFilter({ symbol: value });
   };
 
-  const handleExport = () => {
-    exportTrades({
-      format: 'csv',
-      dateRange: filters.dateRange,
-      profitability: filters.profitability,
-    });
+  const handleExport = async () => {
+    try {
+      await exportTrades({
+        format: 'csv',
+        dateRange: {
+          from: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
+          to: new Date()
+        },
+        filters: { profitability: filters.profitability },
+      });
+    } catch (error) {
+      console.error('Export failed:', error);
+    }
   };
 
   const formatCurrency = (value: number) => {
@@ -250,7 +278,7 @@ const MobileTradeHistory: React.FC = () => {
                     </label>
                     <Select 
                       value={filters.profitability || 'all'} 
-                      onValueChange={(value) => updateFilter('profitability', value === 'all' ? undefined : value as any)}
+                      onValueChange={(value) => updateFilter({ profitability: value === 'all' ? undefined : value as any })}
                     >
                       <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                         <SelectValue />
@@ -268,7 +296,7 @@ const MobileTradeHistory: React.FC = () => {
                     </label>
                     <Select 
                       value={filters.dateRange || '30d'} 
-                      onValueChange={(value) => updateFilter('dateRange', value as any)}
+                      onValueChange={(value) => updateFilter({ dateRange: value as any })}
                     >
                       <SelectTrigger className="bg-gray-800 border-gray-600 text-white">
                         <SelectValue />
@@ -429,7 +457,7 @@ const TradeCard: React.FC<TradeCardProps> = ({ trade }) => {
             <div>
               <h3 className="font-semibold text-white">{trade.symbol}</h3>
               <p className="text-xs text-gray-400">
-                {trade.volume} lots • {formatTime(trade.openTime)}
+                {trade.volume} lots • {formatTime(typeof trade.openTime === 'number' ? trade.openTime : trade.openTime.getTime())}
               </p>
             </div>
           </div>
@@ -464,7 +492,10 @@ const TradeCard: React.FC<TradeCardProps> = ({ trade }) => {
           <div className="text-center">
             <p className="text-xs text-gray-400">Duration</p>
             <p className="text-sm font-medium text-white">
-              {formatDuration(trade.closeTime - trade.openTime)}
+              {formatDuration(
+                (typeof trade.closeTime === 'number' ? trade.closeTime : trade.closeTime.getTime()) - 
+                (typeof trade.openTime === 'number' ? trade.openTime : trade.openTime.getTime())
+              )}
             </p>
           </div>
         </div>
@@ -524,7 +555,7 @@ const TradeCard: React.FC<TradeCardProps> = ({ trade }) => {
             )}
             
             <div className="flex justify-between text-xs text-gray-400">
-              <span>Closed: {formatTime(trade.closeTime)}</span>
+              <span>Closed: {formatTime(typeof trade.closeTime === 'number' ? trade.closeTime : trade.closeTime.getTime())}</span>
               <span>ID: {trade.id}</span>
             </div>
           </div>

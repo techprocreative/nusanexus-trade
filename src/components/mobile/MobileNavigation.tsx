@@ -1,6 +1,20 @@
 import React, { useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
-import { Badge } from '@/components/ui/badge';
+// import { Badge } from '@/components/ui/badge';
+
+// Custom Badge component
+const Badge = ({ children, variant, className }: {
+  children: React.ReactNode;
+  variant?: string;
+  className?: string;
+}) => (
+  <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
+    variant === 'destructive' ? 'bg-red-500 text-white' :
+    variant === 'outline' ? 'border' : 'bg-gray-700'
+  } ${className}`}>
+    {children}
+  </span>
+);
 import {
   TrendingUp,
   BarChart3,
@@ -30,7 +44,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
 }) => {
   const { pendingOrders } = useOrderStore();
   const { positions } = usePositionStore();
-  const { trades } = useHistoryStore();
+  const { tradeHistory } = useHistoryStore();
   const [notifications, setNotifications] = useState(0);
 
   // Simulate notifications (in real app, this would come from a notification store)
@@ -56,7 +70,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
       id: 'positions',
       label: 'Positions',
       icon: TrendingUp,
-      badge: positions.filter(p => p.status === 'open').length || null,
+      badge: positions.length || null,
     },
     {
       id: 'orders',
@@ -219,8 +233,7 @@ export const MobileStatusBar: React.FC<MobileStatusBarProps> = ({ className }) =
   }, []);
 
   const totalPnL = positions
-    .filter(p => p.status === 'open')
-    .reduce((sum, p) => sum + p.unrealizedPnL, 0);
+    .reduce((sum, p) => sum + p.pnl, 0);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('en-US', {
@@ -308,4 +321,3 @@ export const MobileStatusBar: React.FC<MobileStatusBarProps> = ({ className }) =
 */
 
 export default MobileNavigation;
-export { MobileStatusBar, QuickActionButton };

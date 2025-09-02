@@ -1,9 +1,36 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Badge } from '@/components/ui/badge';
-import { Progress } from '@/components/ui/progress';
-import { Separator } from '@/components/ui/separator';
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+// import { Alert, AlertDescription } from '@/components/ui/alert';
+// import { Badge } from '@/components/ui/badge';
+// import { Progress } from '@/components/ui/progress';
+// import { Separator } from '@/components/ui/separator';
+
+// Custom UI components
+const Card = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <div className={`bg-white rounded-lg border shadow-sm ${className}`}>{children}</div>
+);
+const CardHeader = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <div className={`p-6 pb-0 ${className}`}>{children}</div>
+);
+const CardTitle = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <h3 className={`text-lg font-semibold leading-none tracking-tight ${className}`}>{children}</h3>
+);
+const CardContent = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+  <div className={`p-6 pt-0 ${className}`}>{children}</div>
+);
+const Badge = ({ children, variant = 'default', className = '' }: { children: React.ReactNode; variant?: string; className?: string }) => (
+  <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+    variant === 'destructive' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800'
+  } ${className}`}>{children}</span>
+);
+const Progress = ({ value, className = '' }: { value: number; className?: string }) => (
+  <div className={`w-full bg-gray-200 rounded-full h-2 ${className}`}>
+    <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${value}%` }}></div>
+  </div>
+);
+const Separator = ({ className = '' }: { className?: string }) => (
+  <hr className={`border-gray-200 ${className}`} />
+);
 import { 
   AlertTriangle, 
   CheckCircle, 
@@ -39,7 +66,7 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
   showMarketConditions = true
 }) => {
   const { validationResult, riskCalculation, validateOrder, calculateRisk } = useOrderStore();
-  const { symbols, account } = useTradingStore();
+  const { symbols } = useTradingStore();
   const [marketConditions, setMarketConditions] = useState({
     volatility: 'MEDIUM',
     spread: 2.5,
@@ -49,7 +76,7 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
 
   // Real-time validation
   useEffect(() => {
-    if (order.symbol && order.quantity > 0) {
+    if (order.symbol && order.volume && order.volume > 0) {
       validateOrder(order);
       calculateRisk(order);
     }
@@ -65,18 +92,18 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
 
   const getRiskLevelColor = (level: string) => {
     switch (level) {
-      case 'LOW': return 'bg-green-100 text-green-800 border-green-200';
-      case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-      case 'HIGH': return 'bg-red-100 text-red-800 border-red-200';
+      case 'low': return 'bg-green-100 text-green-800 border-green-200';
+      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'high': return 'bg-red-100 text-red-800 border-red-200';
       default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
 
   const getRiskProgress = (level: string) => {
     switch (level) {
-      case 'LOW': return 25;
-      case 'MEDIUM': return 60;
-      case 'HIGH': return 90;
+      case 'low': return 25;
+      case 'medium': return 60;
+      case 'high': return 90;
       default: return 0;
     }
   };
@@ -91,8 +118,8 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
   };
 
   const currentSymbol = symbols.find(s => s.symbol === order.symbol);
-  const accountBalance = account?.balance || 10000;
-  const usedMargin = account?.usedMargin || 0;
+  const accountBalance = 10000; // Mock account balance
+  const usedMargin = 0; // Mock used margin
   const freeMargin = accountBalance - usedMargin;
 
   return (
@@ -115,8 +142,12 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
                   {validationResult.isValid ? 'Order Valid' : 'Validation Failed'}
                 </span>
                 <Badge 
-                  variant={validationResult.isValid ? 'default' : 'destructive'}
-                  className="flex items-center gap-1"
+                  className={cn(
+                    "flex items-center gap-1",
+                    validationResult.isValid 
+                      ? "bg-green-100 text-green-800 border-green-200" 
+                      : "bg-red-100 text-red-800 border-red-200"
+                  )}
                 >
                   {validationResult.isValid ? (
                     <CheckCircle className="h-3 w-3" />
@@ -129,40 +160,40 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
 
               {/* Validation Errors */}
               {!validationResult.isValid && validationResult.errors.length > 0 && (
-                <Alert variant="destructive">
-                  <AlertTriangle className="h-4 w-4" />
-                  <AlertDescription>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
                     <div className="space-y-2">
-                      <p className="font-medium">Please fix the following issues:</p>
+                      <p className="font-medium text-red-800">Please fix the following issues:</p>
                       <ul className="list-disc list-inside space-y-1">
                         {validationResult.errors.map((error, index) => (
-                          <li key={index} className="text-sm">
+                          <li key={index} className="text-sm text-red-700">
                             <span className="font-medium">{error.field}:</span> {error.message}
                           </li>
                         ))}
                       </ul>
                     </div>
-                  </AlertDescription>
-                </Alert>
+                  </div>
+                </div>
               )}
 
               {/* Validation Warnings */}
               {validationResult.warnings && validationResult.warnings.length > 0 && (
-                <Alert>
-                  <AlertCircle className="h-4 w-4" />
-                  <AlertDescription>
+                <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="h-4 w-4 text-yellow-600 mt-0.5" />
                     <div className="space-y-2">
-                      <p className="font-medium">Warnings:</p>
+                      <p className="font-medium text-yellow-800">Warnings:</p>
                       <ul className="list-disc list-inside space-y-1">
                         {validationResult.warnings.map((warning, index) => (
-                          <li key={index} className="text-sm">
-                            <span className="font-medium">{warning.field}:</span> {warning.message}
+                          <li key={index} className="text-sm text-yellow-700">
+                            {warning}
                           </li>
                         ))}
                       </ul>
                     </div>
-                  </AlertDescription>
-                </Alert>
+                  </div>
+                </div>
               )}
 
               {/* Account Checks */}
@@ -228,13 +259,20 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
                   {riskCalculation.riskLevel}
                 </Badge>
               </div>
-              <Progress 
-                value={getRiskProgress(riskCalculation.riskLevel)} 
-                className="h-2"
-              />
+              <div className="w-full bg-gray-200 rounded-full h-2">
+                <div 
+                  className={cn(
+                    "h-2 rounded-full transition-all",
+                    riskCalculation.riskLevel === 'low' && "bg-green-500",
+                    riskCalculation.riskLevel === 'medium' && "bg-yellow-500",
+                    riskCalculation.riskLevel === 'high' && "bg-red-500"
+                  )}
+                  style={{ width: `${getRiskProgress(riskCalculation.riskLevel)}%` }}
+                />
+              </div>
             </div>
 
-            <Separator />
+            <div className="border-t border-gray-200 my-4" />
 
             {/* Risk Metrics */}
             <div className="grid grid-cols-2 gap-4 text-sm">
@@ -249,7 +287,7 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Leverage:</span>
-                  <span className="font-medium">{riskCalculation.leverage}:1</span>
+                  <span className="font-medium">{riskCalculation.leverageUsed}:1</span>
                 </div>
               </div>
               <div className="space-y-2">
@@ -271,24 +309,24 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
             </div>
 
             {/* Risk Warnings */}
-            {riskCalculation.riskLevel === 'HIGH' && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
+            {riskCalculation.riskLevel === 'high' && (
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <div className="text-sm text-red-800">
                   <strong>High Risk Warning:</strong> This order carries significant risk. 
                   Consider reducing position size or adjusting stop loss levels.
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             )}
 
             {riskCalculation.requiredMargin > freeMargin && (
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
+              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5" />
+                <div className="text-sm text-red-800">
                   <strong>Insufficient Margin:</strong> Required margin (${riskCalculation.requiredMargin.toFixed(2)}) 
                   exceeds available free margin (${freeMargin.toFixed(2)}).
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>
@@ -352,30 +390,30 @@ export const OrderValidation: React.FC<OrderValidationProps> = ({
 
             {/* Market Warnings */}
             {!marketConditions.marketHours && (
-              <Alert>
-                <Clock className="h-4 w-4" />
-                <AlertDescription>
+              <div className="flex items-start gap-3 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                <Clock className="h-4 w-4 text-blue-600 mt-0.5" />
+                <div className="text-sm text-blue-800">
                   <strong>Market Closed:</strong> Trading outside market hours may result in wider spreads and limited liquidity.
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             )}
 
             {marketConditions.volatility === 'HIGH' && (
-              <Alert>
-                <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
+              <div className="flex items-start gap-3 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5" />
+                <div className="text-sm text-yellow-800">
                   <strong>High Volatility:</strong> Market conditions are highly volatile. Consider adjusting position size and stop loss levels.
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             )}
 
             {marketConditions.spread > 5 && (
-              <Alert>
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription>
+              <div className="flex items-start gap-3 p-4 bg-orange-50 border border-orange-200 rounded-lg">
+                <AlertCircle className="h-4 w-4 text-orange-600 mt-0.5" />
+                <div className="text-sm text-orange-800">
                   <strong>Wide Spread:</strong> Current spread is wider than usual ({marketConditions.spread} pips). This may impact order execution.
-                </AlertDescription>
-              </Alert>
+                </div>
+              </div>
             )}
           </CardContent>
         </Card>

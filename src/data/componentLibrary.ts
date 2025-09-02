@@ -558,6 +558,30 @@ export const componentLibrary: ComponentDefinition[] = [
     ],
     inputs: [],
     outputs: ['k', 'd']
+  },
+  {
+    id: 'cci',
+    type: 'cci',
+    category: 'technical-indicators',
+    name: 'Commodity Channel Index',
+    description: 'CCI oscillator for identifying cyclical trends',
+    icon: 'BarChart3',
+    color: '#8b5cf6',
+    parameters: [
+      {
+        name: 'period',
+        type: 'number',
+        label: 'Period',
+        description: 'CCI calculation period',
+        required: true,
+        defaultValue: 20,
+        min: 5,
+        max: 100,
+        validation: { min: 5, max: 100 }
+      }
+    ],
+    inputs: [],
+    outputs: ['cci']
   }
 ];
 

@@ -1,4 +1,13 @@
-export { Dashboard } from './Dashboard';
-export { Trading } from './Trading';
-export { Strategies } from './Strategies';
-export { Settings } from './Settings';
+export { default as Dashboard } from './Dashboard';
+export { default as Trading } from './Trading';
+export { default as Strategies } from './Strategies';
+export { default as Settings } from './Settings';
+export { default as StrategyLibrary } from './StrategyLibrary';
+export { default as StrategyBuilder } from './StrategyBuilder';
+export { default as AIMarketAnalysis } from './AIMarketAnalysis';
+export { default as StrategyAnalysis } from './StrategyAnalysis';
+export { default as InteractiveTools } from './InteractiveTools';
+export { default as UserFeedbackCenter } from './UserFeedbackCenter';
+export { default as EducationalHub } from './EducationalHub';
+export { default as ImplementationAssistant } from './ImplementationAssistant';
+export { default as OnboardingFlow } from './OnboardingFlow';

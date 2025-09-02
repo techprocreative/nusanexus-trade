@@ -50,7 +50,7 @@ import {
 import { usePositionStore } from '@/store/usePositionStore';
 import { useOrderStore } from '@/store/useOrderStore';
 import { useHistoryStore } from '@/store/useHistoryStore';
-import { Position, Order, TradeHistory } from '@/types/trading';
+import { Position, Order, TradeHistory } from '@/types/orderManagement';
 
 type ExportFormat = 'csv' | 'excel' | 'json';
 type ExportType = 'positions' | 'orders' | 'history' | 'all';
@@ -92,7 +92,7 @@ interface ExportManagerProps {
 const ExportManager: React.FC<ExportManagerProps> = ({ className }) => {
   const { positions } = usePositionStore();
   const { orders } = useOrderStore();
-  const { trades } = useHistoryStore();
+  const { tradeHistory } = useHistoryStore();
 
   // Export configuration
   const [exportConfig, setExportConfig] = useState<ExportConfig>({
@@ -234,7 +234,7 @@ const ExportManager: React.FC<ExportManagerProps> = ({ className }) => {
         });
         
       case 'history':
-        return trades.filter(trade => {
+        return tradeHistory.filter(trade => {
           const closeTime = new Date(trade.closeTime);
           const matchesDate = closeTime >= startDate && closeTime <= endDate;
           const matchesSymbol = !exportConfig.filters.symbols?.length || 
@@ -247,11 +247,21 @@ const ExportManager: React.FC<ExportManagerProps> = ({ className }) => {
         const allData = [
           ...positions.map(p => ({ ...p, type: 'position' })),
           ...orders.map(o => ({ ...o, type: 'order' })),
-          ...trades.map(t => ({ ...t, type: 'trade' })),
+          ...tradeHistory.map(t => ({ ...t, type: 'trade' })),
         ];
         
         return allData.filter(item => {
-          const timestamp = new Date(item.createdAt || item.openTime || item.closeTime);
+          let timestamp: Date;
+          if (item.type === 'trade') {
+            const trade = item as any;
+            timestamp = new Date(trade.openTime || trade.closeTime || new Date());
+          } else if (item.type === 'order') {
+            const order = item as any;
+            timestamp = new Date(order.createdAt || new Date());
+          } else {
+            // position
+            timestamp = new Date();
+          }
           return timestamp >= startDate && timestamp <= endDate;
         });
         
