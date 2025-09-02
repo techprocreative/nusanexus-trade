@@ -44,7 +44,7 @@ describe('ErrorHandler', () => {
         message: 'Unauthorized',
         status: 401,
         code: 'UNAUTHORIZED',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       const result = handleApiError(error);
@@ -61,7 +61,7 @@ describe('ErrorHandler', () => {
         message: 'Validation failed',
         status: 400,
         code: 'VALIDATION_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
         details: {
           field: 'email',
           message: 'Invalid email format',
@@ -81,7 +81,7 @@ describe('ErrorHandler', () => {
         message: 'Network Error',
         status: 0,
         code: 'NETWORK_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       const result = handleApiError(error);
@@ -97,7 +97,7 @@ describe('ErrorHandler', () => {
         message: 'Internal Server Error',
         status: 500,
         code: 'INTERNAL_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       const result = handleApiError(error);
@@ -113,7 +113,7 @@ describe('ErrorHandler', () => {
         message: 'Too Many Requests',
         status: 429,
         code: 'RATE_LIMIT_EXCEEDED',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       const result = handleApiError(error);
@@ -129,7 +129,7 @@ describe('ErrorHandler', () => {
         message: 'Unknown error',
         status: 418,
         code: 'UNKNOWN_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       const result = handleApiError(error);
@@ -180,7 +180,7 @@ describe('ErrorHandler', () => {
         message: 'Test error',
         status: 400,
         code: 'TEST_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       await reportError(error);
@@ -194,7 +194,7 @@ describe('ErrorHandler', () => {
         message: 'Test error',
         status: 400,
         code: 'TEST_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       await reportError(error, {
@@ -212,7 +212,7 @@ describe('ErrorHandler', () => {
         message: `Test error ${i}`,
         status: 400,
         code: 'TEST_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       }));
 
       // Report multiple errors quickly
@@ -230,14 +230,14 @@ describe('ErrorHandler', () => {
         message: 'Error 1',
         status: 400,
         code: 'VALIDATION_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       const error2: ApiError = {
         message: 'Error 2',
         status: 500,
         code: 'INTERNAL_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       await reportError(error1);
@@ -256,7 +256,7 @@ describe('ErrorHandler', () => {
         message: 'Test error',
         status: 400,
         code: 'TEST_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       await reportError(error);
@@ -273,7 +273,7 @@ describe('ErrorHandler', () => {
         message: 'Recent error',
         status: 400,
         code: 'TEST_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       await reportError(error);
@@ -307,7 +307,7 @@ describe('ErrorHandler', () => {
         message: 'Retryable error',
         status: 500,
         code: 'INTERNAL_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       const retryFn = vi.fn().mockRejectedValueOnce(error).mockResolvedValueOnce('success');
@@ -322,7 +322,7 @@ describe('ErrorHandler', () => {
         message: 'Persistent error',
         status: 500,
         code: 'INTERNAL_ERROR',
-        timestamp: Date.now(),
+        timestamp: new Date().toISOString(),
       };
 
       const retryFn = vi.fn().mockRejectedValue(error);

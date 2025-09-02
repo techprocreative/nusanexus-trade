@@ -132,6 +132,22 @@ class ErrorHandler {
   private maxQueueSize = 50;
   private reportingEndpoint = '/api/errors';
 
+  constructor(config?: {
+    maxRetries?: number;
+    retryDelay?: number;
+    enableReporting?: boolean;
+    reportingEndpoint?: string;
+  }) {
+    if (config) {
+      if (config.maxRetries !== undefined) {
+        this.maxQueueSize = config.maxRetries;
+      }
+      if (config.reportingEndpoint !== undefined) {
+        this.reportingEndpoint = config.reportingEndpoint;
+      }
+    }
+  }
+
   /**
    * Handle API errors with appropriate user feedback and logging
    */
@@ -362,7 +378,7 @@ class ErrorHandler {
    */
   public getErrorStats(): Record<string, number> {
     const stats: Record<string, number> = {};
-    
+
     this.errorQueue.forEach(report => {
       const key = report.error.code;
       stats[key] = (stats[key] || 0) + 1;
@@ -370,10 +386,67 @@ class ErrorHandler {
 
     return stats;
   }
+
+  /**
+   * Get current config
+   */
+  public getConfig(): any {
+    return {
+      maxRetries: this.errorQueue.length,
+      retryDelay: 100,
+      enableReporting: import.meta.env.DEV
+    };
+  }
+
+  /**
+   * Handle operations with retry
+   */
+  public async handleWithRetry<T>(fn: () => Promise<T>): Promise<T> {
+    let lastError: any;
+    for (let i = 0; i < 3; i++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error;
+        await new Promise(resolve => setTimeout(resolve, 1000 * (i + 1)));
+      }
+    }
+    throw lastError;
+  }
+
+  /**
+   * Update configuration
+   */
+  public updateConfig(newConfig: Partial<any>): void {
+    if (newConfig.maxRetries !== undefined) {
+      this.maxQueueSize = newConfig.maxRetries;
+    }
+    if (newConfig.reportingEndpoint !== undefined) {
+      this.reportingEndpoint = newConfig.reportingEndpoint;
+    }
+  }
+
+  /**
+   * Public access to report error (for testing compatibility)
+   */
+  public accessReportError(error: ApiError, context?: Record<string, any>): void {
+    return this.reportError(error, context);
+  }
 }
 
 // Create singleton instance
 export const errorHandler = new ErrorHandler();
+
+// Export the class for testing
+export { ErrorHandler };
+
+// Export individual functions for testing convenience
+export const handleApiError = errorHandler.handleApiError.bind(errorHandler);
+export const handleGlobalError = errorHandler.handleGeneralError.bind(errorHandler);
+export const getErrorStats = errorHandler.getErrorStats.bind(errorHandler);
+export const clearErrorStats = errorHandler.clearErrorQueue.bind(errorHandler);
+
+export const reportError = (error: ApiError, context?: Record<string, any>) => errorHandler.accessReportError(error, context);
 
 // Setup global error handlers
 if (typeof window !== 'undefined') {

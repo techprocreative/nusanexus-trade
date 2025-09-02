@@ -11,6 +11,7 @@ export interface ApiError {
   message: string;
   details?: Record<string, any>;
   timestamp: string;
+  status?: number; // HTTP status code
 }
 
 export interface PaginatedResponse<T> {
@@ -349,3 +350,56 @@ export interface ApiMetrics {
   cacheHitRate: number;
   errorRate: number;
 }
+
+// Additional type aliases for compatibility
+export interface User {
+  id: string;
+  email: string;
+  name: string;
+  avatar?: string;
+  subscriptionPlan: 'free' | 'premium' | 'pro';
+}
+
+export interface MarketData {
+  symbol: string;
+  timestamp: string;
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  volume: number;
+  bid: number;
+  ask: number;
+  spread: number;
+}
+
+export interface AIAnalysis {
+  id: string;
+  symbol: string;
+  timeframe: string;
+  analysisType: string;
+  analysisData: Record<string, any>;
+  confidenceScore: number;
+  recommendations: {
+    action: 'buy' | 'sell' | 'hold';
+    confidence: number;
+    reasoning: string;
+    targetPrice?: number;
+    stopLoss?: number;
+    timeHorizon: 'short' | 'medium' | 'long';
+  }[];
+  createdAt: string;
+}
+
+// Type aliases for existing interfaces
+export type Order = OrderResponse;
+export type Position = PositionResponse;
+export type Portfolio = PortfolioResponse;
+export type Strategy = StrategyResponse;
+export type UpdateOrderRequest = ModifyOrderRequest;
+export type UpdateUserRequest = {
+  id: string;
+  name?: string;
+  email?: string;
+  avatar?: string;
+};

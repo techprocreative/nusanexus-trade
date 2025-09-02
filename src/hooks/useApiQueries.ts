@@ -123,7 +123,7 @@ export const useLogout = (options?: UseMutationOptions<void, ApiError, void>) =>
   });
 };
 
-export const useCurrentUser = (options?: UseQueryOptions<User, ApiError>) => {
+export const useUser = (options?: UseQueryOptions<User, ApiError>) => {
   return useQuery({
     queryKey: queryKeys.user(),
     queryFn: async () => {

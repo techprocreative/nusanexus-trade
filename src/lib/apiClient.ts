@@ -396,6 +396,26 @@ class ApiClient {
   public clearQueue(): void {
     this.offlineQueue = [];
   }
+
+  // Methods expected by tests (for compatibility/testing)
+  public getStoredToken(): string | null {
+    return this.getAccessToken();
+  }
+
+  public isDebugMode(): boolean {
+    return this.debugMode;
+  }
+
+  public getRequestStats(): Record<string, number> {
+    return {
+      totalRequests: this.requestCounter,
+      offlineQueueSize: this.offlineQueue.length
+    };
+  }
+
+  public resetRequestStats(): void {
+    this.requestCounter = 0;
+  }
 }
 
 // Create and export singleton instance

@@ -37,14 +37,11 @@ const mockUser: User = {
   id: '1',
   email: 'test@example.com',
   name: 'Test User',
-  role: 'trader',
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  subscriptionPlan: 'free'
 };
 
 const mockOrder: Order = {
   id: '1',
-  userId: '1',
   symbol: 'AAPL',
   type: 'market',
   side: 'buy',
@@ -57,54 +54,62 @@ const mockOrder: Order = {
 
 const mockPosition: Position = {
   id: '1',
-  userId: '1',
   symbol: 'AAPL',
+  side: 'long',
   quantity: 100,
   averagePrice: 150.00,
   currentPrice: 155.00,
   unrealizedPnL: 500.00,
-  realizedPnL: 0,
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
+  unrealizedPnLPercent: 3.33,
+  openedAt: '2024-01-01T00:00:00Z',
 };
 
 const mockPortfolio: Portfolio = {
-  id: '1',
-  userId: '1',
   totalValue: 100000,
-  availableCash: 50000,
   totalPnL: 5000,
-  dayPnL: 500,
+  totalPnLPercent: 5.0,
+  availableBalance: 50000,
+  usedMargin: 50000,
+  freeMargin: 50000,
   positions: [mockPosition],
-  createdAt: '2024-01-01T00:00:00Z',
-  updatedAt: '2024-01-01T00:00:00Z',
 };
 
 const mockMarketData: MarketData = {
   symbol: 'AAPL',
-  price: 155.00,
-  change: 5.00,
-  changePercent: 3.33,
+  bid: 155.00,
+  ask: 155.50,
+  spread: 0.5,
   volume: 1000000,
   high: 156.00,
   low: 150.00,
   open: 152.00,
+  close: 155.00,
   timestamp: '2024-01-01T00:00:00Z',
 };
 
 const mockStrategy: Strategy = {
   id: '1',
-  userId: '1',
   name: 'Test Strategy',
   description: 'A test trading strategy',
-  type: 'momentum',
-  status: 'active',
+  symbols: ['AAPL'],
+  riskLevel: 'low',
   parameters: { rsi_period: 14, ma_period: 20 },
+  riskSettings: {
+    maxRiskPerTrade: 10,
+    maxDailyLoss: 100,
+    maxDrawdown: 20,
+    positionSizing: 'percentage',
+    stopLossType: 'fixed'
+  },
+  isActive: true,
   performance: {
-    totalReturn: 0.15,
-    sharpeRatio: 1.2,
-    maxDrawdown: 0.05,
+    totalTrades: 100,
     winRate: 0.65,
+    profitFactor: 1.2,
+    totalProfit: 5000,
+    totalReturn: 0.15,
+    maxDrawdown: 0.05,
+    sharpeRatio: 1.2,
   },
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
@@ -113,13 +118,18 @@ const mockStrategy: Strategy = {
 const mockAIAnalysis: AIAnalysis = {
   id: '1',
   symbol: 'AAPL',
-  analysis: 'Strong buy signal based on technical indicators',
-  recommendation: 'buy',
-  confidence: 0.85,
-  factors: ['RSI oversold', 'Moving average crossover'],
-  targetPrice: 160.00,
-  stopLoss: 145.00,
   timeframe: '1d',
+  analysisType: 'trend',
+  analysisData: { signal: 'buy', strength: 0.85 },
+  confidenceScore: 0.85,
+  recommendations: [{
+    action: 'buy',
+    confidence: 0.85,
+    reasoning: 'Strong buy signal',
+    targetPrice: 160.00,
+    stopLoss: 145.00,
+    timeHorizon: 'short'
+  }],
   createdAt: '2024-01-01T00:00:00Z',
 };
 
@@ -279,12 +289,11 @@ describe('useApiQueries', () => {
         expect(result.current.data).toEqual(mockOrders);
       });
 
-      it('should fetch orders with filters', async () => {
-        const filters = { status: 'filled' as const, symbol: 'AAPL' };
+      it('should fetch orders with options', async () => {
         const mockOrders = [mockOrder];
         mockedApiClient.get.mockResolvedValue(mockOrders);
 
-        const { result } = renderHook(() => useOrders(filters), {
+        const { result } = renderHook(() => useOrders(), {
           wrapper: createWrapper(),
         });
 
@@ -292,7 +301,7 @@ describe('useApiQueries', () => {
           expect(result.current.isSuccess).toBe(true);
         });
 
-        expect(mockedApiClient.get).toHaveBeenCalledWith('/trading/orders', { params: filters });
+        expect(mockedApiClient.get).toHaveBeenCalledWith('/trading/orders');
       });
     });
 
@@ -335,9 +344,10 @@ describe('useApiQueries', () => {
   describe('Market Data Hooks', () => {
     describe('useMarketData', () => {
       it('should fetch market data for symbol', async () => {
-        mockedApiClient.get.mockResolvedValue(mockMarketData);
+        mockedApiClient.post.mockResolvedValue([mockMarketData]);
 
-        const { result } = renderHook(() => useMarketData('AAPL'), {
+        const request = { symbols: ['AAPL'] };
+        const { result } = renderHook(() => useMarketData(request), {
           wrapper: createWrapper(),
         });
 
@@ -345,17 +355,17 @@ describe('useApiQueries', () => {
           expect(result.current.isSuccess).toBe(true);
         });
 
-        expect(mockedApiClient.get).toHaveBeenCalledWith('/market/data/AAPL');
-        expect(result.current.data).toEqual(mockMarketData);
+        expect(mockedApiClient.post).toHaveBeenCalledWith('/market-data', request);
+        expect(result.current.data).toEqual([mockMarketData]);
       });
 
-      it('should not fetch when symbol is not provided', () => {
-        const { result } = renderHook(() => useMarketData(''), {
+      it('should not fetch when symbols are not provided', () => {
+        const { result } = renderHook(() => useMarketData({ symbols: [] }), {
           wrapper: createWrapper(),
         });
 
-        expect(result.current.isIdle).toBe(true);
-        expect(mockedApiClient.get).not.toHaveBeenCalled();
+        expect(result.current.isLoading).toBe(false); // Should not be enabled
+        expect(mockedApiClient.post).not.toHaveBeenCalled();
       });
     });
   });
@@ -384,8 +394,16 @@ describe('useApiQueries', () => {
         const strategyData = {
           name: 'Test Strategy',
           description: 'A test strategy',
-          type: 'momentum' as const,
-          parameters: { rsi_period: 14 },
+          symbols: ['AAPL'],
+          riskLevel: 'low' as const,
+          parameters: { rsi_period: {} },
+          riskSettings: {
+            maxRiskPerTrade: 10,
+            maxDailyLoss: 100,
+            maxDrawdown: 20,
+            positionSizing: 'percentage' as const,
+            stopLossType: 'fixed' as const
+          }
         };
 
         mockedApiClient.post.mockResolvedValue(mockStrategy);
@@ -409,50 +427,40 @@ describe('useApiQueries', () => {
   describe('AI Analysis Hooks', () => {
     describe('useAIAnalysis', () => {
       it('should fetch AI analysis for symbol', async () => {
-        mockedApiClient.get.mockResolvedValue(mockAIAnalysis);
+        const analysisRequest = {
+          symbol: 'AAPL',
+          timeframe: '1d' as const,
+          analysisType: 'trend' as const
+        };
+        mockedApiClient.post.mockResolvedValue(mockAIAnalysis);
 
-        const { result } = renderHook(() => useAIAnalysis('AAPL'), {
+        const { result } = renderHook(() => useAIAnalysis(), {
           wrapper: createWrapper(),
         });
+
+        result.current.mutate(analysisRequest);
 
         await waitFor(() => {
           expect(result.current.isSuccess).toBe(true);
         });
 
-        expect(mockedApiClient.get).toHaveBeenCalledWith('/ai/analysis/AAPL', { params: {} });
+        expect(mockedApiClient.post).toHaveBeenCalledWith('/ai/analyze', analysisRequest);
         expect(result.current.data).toEqual(mockAIAnalysis);
-      });
-
-      it('should fetch AI analysis with timeframe', async () => {
-        mockedApiClient.get.mockResolvedValue(mockAIAnalysis);
-
-        const { result } = renderHook(() => useAIAnalysis('AAPL', '1h'), {
-          wrapper: createWrapper(),
-        });
-
-        await waitFor(() => {
-          expect(result.current.isSuccess).toBe(true);
-        });
-
-        expect(mockedApiClient.get).toHaveBeenCalledWith('/ai/analysis/AAPL', {
-          params: { timeframe: '1h' },
-        });
       });
     });
   });
 
   describe('Query Keys', () => {
     it('should generate correct query keys', () => {
-      expect(queryKeys.user()).toEqual(['user']);
-      expect(queryKeys.orders()).toEqual(['orders']);
-      expect(queryKeys.orders({ status: 'filled' })).toEqual(['orders', { status: 'filled' }]);
-      expect(queryKeys.positions()).toEqual(['positions']);
-      expect(queryKeys.portfolio()).toEqual(['portfolio']);
-      expect(queryKeys.marketData('AAPL')).toEqual(['marketData', 'AAPL']);
-      expect(queryKeys.strategies()).toEqual(['strategies']);
-      expect(queryKeys.strategies({ status: 'active' })).toEqual(['strategies', { status: 'active' }]);
-      expect(queryKeys.aiAnalysis('AAPL')).toEqual(['aiAnalysis', 'AAPL']);
-      expect(queryKeys.aiAnalysis('AAPL', '1h')).toEqual(['aiAnalysis', 'AAPL', '1h']);
+      expect(queryKeys.user()).toEqual(['auth', 'user']);
+      expect(queryKeys.orders).toEqual(['orders']);
+      expect(queryKeys.orderHistory({ status: 'filled' })).toEqual(['orders', 'history', { status: 'filled' }]);
+      expect(queryKeys.positions).toEqual(['positions']);
+      expect(queryKeys.portfolio).toEqual(['portfolio']);
+      expect(queryKeys.symbol('AAPL')).toEqual(['market-data', 'symbol', 'AAPL']);
+      expect(queryKeys.strategies).toEqual(['strategies']);
+      expect(queryKeys.aiAnalysis).toEqual(['ai-analysis']);
+      expect(queryKeys.aiRecommendations({ strategy: 'momentum' })).toEqual(['ai-analysis', 'recommendations', { strategy: 'momentum' }]);
     });
   });
 

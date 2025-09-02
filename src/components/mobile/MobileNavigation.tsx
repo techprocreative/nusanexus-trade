@@ -1,6 +1,8 @@
-import React from 'react';
-import { Home, TrendingUp, PieChart, BarChart3, Settings, Plus } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Home, TrendingUp, PieChart, BarChart3, Settings, Plus, Wallet } from 'lucide-react';
 import { motion } from 'framer-motion';
+import { cn } from '../../utils/cn';
+import { usePositionStore } from '../../store/usePositionStore';
 
 interface MobileNavigationProps {
   activeTab: string;
