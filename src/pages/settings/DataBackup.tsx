@@ -68,7 +68,7 @@ const DataBackup: React.FC = () => {
     cloudStorage: false,
     encryptBackups: true,
     gdprCompliance: true,
-    dataRetentionPeriod: 365
+    retentionPeriod: 365
   });
 
   const [backupRecords, setBackupRecords] = useState<BackupRecord[]>([]);
@@ -139,7 +139,7 @@ const DataBackup: React.FC = () => {
         cloudStorage: backup.cloud_storage || false,
         encryptBackups: backup.encrypt_backups !== false,
         gdprCompliance: backup.gdpr_compliance !== false,
-        dataRetentionPeriod: backup.data_retention_period || 365
+        retentionPeriod: backup.data_retention_period || 365
       });
     }
   }, [userSettings]);
@@ -214,16 +214,16 @@ const DataBackup: React.FC = () => {
     
     try {
       await updateDataBackupPreferences({
-        auto_backup: backupForm.autoBackup,
-        backup_frequency: backupForm.backupFrequency,
-        backup_retention: backupForm.backupRetention,
-        include_trade_history: backupForm.includeTradeHistory,
-        include_settings: backupForm.includeSettings,
-        include_personal_data: backupForm.includePersonalData,
-        cloud_storage: backupForm.cloudStorage,
-        encrypt_backups: backupForm.encryptBackups,
-        gdpr_compliance: backupForm.gdprCompliance,
-        data_retention_period: backupForm.dataRetentionPeriod
+        autoBackup: backupForm.autoBackup,
+        backupFrequency: backupForm.backupFrequency,
+        backupRetention: backupForm.backupRetention,
+        includeTradeHistory: backupForm.includeTradeHistory,
+        includeSettings: backupForm.includeSettings,
+        includePersonalData: backupForm.includePersonalData,
+        cloudStorage: backupForm.cloudStorage,
+        encryptBackups: backupForm.encryptBackups,
+        gdprCompliance: backupForm.gdprCompliance,
+        retentionPeriod: backupForm.retentionPeriod
       });
       toast.success('Data & backup preferences updated successfully');
       setHasChanges(false);
@@ -245,7 +245,7 @@ const DataBackup: React.FC = () => {
         cloudStorage: backup.cloud_storage || false,
         encryptBackups: backup.encrypt_backups !== false,
         gdprCompliance: backup.gdpr_compliance !== false,
-        dataRetentionPeriod: backup.data_retention_period || 365
+        retentionPeriod: backup.data_retention_period || 365
       });
     }
     setHasChanges(false);
@@ -616,8 +616,8 @@ const DataBackup: React.FC = () => {
                 Data Retention Period
               </label>
               <select
-                value={backupForm.dataRetentionPeriod}
-                onChange={(e) => handleFormChange('dataRetentionPeriod', parseInt(e.target.value))}
+                value={backupForm.retentionPeriod}
+                onChange={(e) => handleFormChange('retentionPeriod', parseInt(e.target.value))}
                 className="w-full md:w-64 px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               >
                 {dataRetentionOptions.map((option) => (

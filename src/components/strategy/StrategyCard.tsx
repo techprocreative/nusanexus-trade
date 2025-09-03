@@ -55,7 +55,7 @@ export const StrategyCard: React.FC<StrategyCardProps> = ({
     const { loadStrategyAsTemplate } = useStrategyBuilderStore.getState();
     
     // Load strategy as template in the builder store
-    loadStrategyAsTemplate(strategy);
+    loadStrategyAsTemplate(strategy.id);
     
     // Navigate to strategy builder
     navigate('/strategy-builder');

@@ -73,15 +73,15 @@ const AccountSettings: React.FC = () => {
   useEffect(() => {
     if (userProfile) {
       setProfileForm({
-        firstName: userProfile.first_name || '',
-        lastName: userProfile.last_name || '',
-        displayName: userProfile.display_name || '',
+        firstName: userProfile.firstName || '',
+        lastName: userProfile.lastName || '',
+        displayName: userProfile.displayName || '',
         phone: userProfile.phone || '',
         country: userProfile.country || '',
         timezone: userProfile.timezone || 'UTC',
         language: userProfile.language || 'en',
-        dateFormat: userProfile.date_format || 'MM/DD/YYYY',
-        timeFormat: userProfile.time_format || '12h'
+        dateFormat: userProfile.dateFormat || 'MM/DD/YYYY',
+        timeFormat: userProfile.timeFormat || '12h'
       });
     }
   }, [userProfile]);
@@ -97,15 +97,15 @@ const AccountSettings: React.FC = () => {
     e.preventDefault();
     try {
       await updateUserProfile({
-        first_name: profileForm.firstName,
-        last_name: profileForm.lastName,
-        display_name: profileForm.displayName,
+        firstName: profileForm.firstName,
+        lastName: profileForm.lastName,
+        displayName: profileForm.displayName,
         phone: profileForm.phone,
         country: profileForm.country,
         timezone: profileForm.timezone,
         language: profileForm.language,
-        date_format: profileForm.dateFormat,
-        time_format: profileForm.timeFormat
+        dateFormat: profileForm.dateFormat,
+        timeFormat: profileForm.timeFormat
       });
       toast.success('Profile updated successfully');
     } catch (error) {
@@ -127,7 +127,11 @@ const AccountSettings: React.FC = () => {
     }
 
     try {
-      await changePassword(passwordForm.currentPassword, passwordForm.newPassword);
+      await changePassword({ 
+        currentPassword: passwordForm.currentPassword, 
+        newPassword: passwordForm.newPassword,
+        confirmPassword: passwordForm.confirmPassword
+      });
       toast.success('Password changed successfully');
       setPasswordForm({ currentPassword: '', newPassword: '', confirmPassword: '' });
     } catch (error) {

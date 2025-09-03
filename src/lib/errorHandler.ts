@@ -118,7 +118,7 @@ const ERROR_CONFIG: Record<ApiErrorCode, ErrorConfig> = {
 // Error reporting interface
 interface ErrorReport {
   error: ApiError;
-  context?: Record<string, any>;
+  context?: Record<string, unknown>;
   userId?: string;
   sessionId?: string;
   timestamp: string;
@@ -151,7 +151,7 @@ class ErrorHandler {
   /**
    * Handle API errors with appropriate user feedback and logging
    */
-  public handleApiError(error: ApiError, context?: Record<string, any>): void {
+  public handleApiError(error: ApiError, context?: Record<string, unknown>): void {
     const config = ERROR_CONFIG[error.code] || ERROR_CONFIG.UNKNOWN_ERROR;
     
     // Show user-friendly toast notification
@@ -176,7 +176,7 @@ class ErrorHandler {
   /**
    * Handle general JavaScript errors
    */
-  public handleGeneralError(error: Error, context?: Record<string, any>): void {
+  public handleGeneralError(error: Error, context?: Record<string, unknown>): void {
     const apiError: ApiError = {
       code: 'UNKNOWN_ERROR',
       message: error.message,
@@ -235,7 +235,7 @@ class ErrorHandler {
   /**
    * Log error to console with structured information
    */
-  private logError(error: ApiError, config: ErrorConfig, context?: Record<string, any>): void {
+  private logError(error: ApiError, config: ErrorConfig, context?: Record<string, unknown>): void {
     const logData = {
       error,
       config,
@@ -261,7 +261,7 @@ class ErrorHandler {
   /**
    * Report error to monitoring service
    */
-  private reportError(error: ApiError, context?: Record<string, any>): void {
+  private reportError(error: ApiError, context?: Record<string, unknown>): void {
     const report: ErrorReport = {
       error,
       context,
@@ -324,7 +324,7 @@ class ErrorHandler {
   /**
    * Emit custom error event for application-level error handling
    */
-  private emitErrorEvent(error: ApiError, config: ErrorConfig, context?: Record<string, any>): void {
+  private emitErrorEvent(error: ApiError, config: ErrorConfig, context?: Record<string, unknown>): void {
     window.dispatchEvent(new CustomEvent('app:error', {
       detail: {
         error,
@@ -338,7 +338,7 @@ class ErrorHandler {
   /**
    * Check if error is an API error
    */
-  private isApiError(error: any): error is ApiError {
+  private isApiError(error: unknown): error is ApiError {
     return error && typeof error === 'object' && 'code' in error && 'timestamp' in error;
   }
 
@@ -390,7 +390,11 @@ class ErrorHandler {
   /**
    * Get current config
    */
-  public getConfig(): any {
+  public getConfig(): {
+    maxRetries: number;
+    retryDelay: number;
+    enableReporting: boolean;
+  } {
     return {
       maxRetries: this.errorQueue.length,
       retryDelay: 100,
@@ -402,7 +406,7 @@ class ErrorHandler {
    * Handle operations with retry
    */
   public async handleWithRetry<T>(fn: () => Promise<T>): Promise<T> {
-    let lastError: any;
+    let lastError: unknown;
     for (let i = 0; i < 3; i++) {
       try {
         return await fn();
@@ -417,7 +421,12 @@ class ErrorHandler {
   /**
    * Update configuration
    */
-  public updateConfig(newConfig: Partial<any>): void {
+  public updateConfig(newConfig: {
+    maxRetries?: number;
+    retryDelay?: number;
+    enableReporting?: boolean;
+    reportingEndpoint?: string;
+  }): void {
     if (newConfig.maxRetries !== undefined) {
       this.maxQueueSize = newConfig.maxRetries;
     }
@@ -429,7 +438,7 @@ class ErrorHandler {
   /**
    * Public access to report error (for testing compatibility)
    */
-  public accessReportError(error: ApiError, context?: Record<string, any>): void {
+  public accessReportError(error: ApiError, context?: Record<string, unknown>): void {
     return this.reportError(error, context);
   }
 }
@@ -446,7 +455,7 @@ export const handleGlobalError = errorHandler.handleGeneralError.bind(errorHandl
 export const getErrorStats = errorHandler.getErrorStats.bind(errorHandler);
 export const clearErrorStats = errorHandler.clearErrorQueue.bind(errorHandler);
 
-export const reportError = (error: ApiError, context?: Record<string, any>) => errorHandler.accessReportError(error, context);
+export const reportError = (error: ApiError, context?: Record<string, unknown>) => errorHandler.accessReportError(error, context);
 
 // Setup global error handlers
 if (typeof window !== 'undefined') {

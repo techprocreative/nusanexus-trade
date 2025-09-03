@@ -52,7 +52,7 @@ class ApiClient {
     this.instance.interceptors.request.use(
       (config) => {
         const requestId = `req_${++this.requestCounter}_${Date.now()}`;
-        config.metadata = { requestId, startTime: Date.now() };
+        (config as any).metadata = { requestId, startTime: Date.now() };
 
         // Add authentication token
         const token = this.getAccessToken();
@@ -82,11 +82,11 @@ class ApiClient {
     // Response interceptor
     this.instance.interceptors.response.use(
       (response) => {
-        const duration = Date.now() - response.config.metadata?.startTime;
+        const duration = Date.now() - ((response.config as any).metadata?.startTime || Date.now());
         
         if (this.config.enableLogging) {
           console.log(`[API Response] ${response.status} ${response.config.url}`, {
-            requestId: response.config.metadata?.requestId,
+            requestId: (response.config as any).metadata?.requestId,
             duration: `${duration}ms`,
             data: response.data
           });
@@ -95,7 +95,7 @@ class ApiClient {
         // Emit debug event for development tools
         if (this.debugMode) {
           this.emitDebugEvent({
-            requestId: response.config.metadata?.requestId,
+            requestId: (response.config as any).metadata?.requestId,
             method: response.config.method?.toUpperCase() || 'GET',
             url: response.config.url || '',
             requestData: response.config.data,
@@ -151,19 +151,19 @@ class ApiClient {
         
         if (this.config.enableLogging) {
           console.error('[API Response Error]', {
-            requestId: originalRequest?.metadata?.requestId,
+            requestId: (originalRequest as any)?.metadata?.requestId,
             error: transformedError
           });
         }
 
         // Emit debug event for errors
-        if (this.debugMode && originalRequest?.metadata) {
+        if (this.debugMode && (originalRequest as any)?.metadata) {
           this.emitDebugEvent({
-            requestId: originalRequest.metadata.requestId,
+            requestId: (originalRequest as any).metadata.requestId,
             method: originalRequest.method?.toUpperCase() || 'GET',
             url: originalRequest.url || '',
             requestData: originalRequest.data,
-            duration: Date.now() - originalRequest.metadata.startTime,
+            duration: Date.now() - (originalRequest as any).metadata.startTime,
             status: error.response?.status || 0,
             timestamp: new Date().toISOString(),
             error: transformedError.message

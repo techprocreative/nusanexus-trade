@@ -57,6 +57,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = () => {
       const operation: BulkOperation = {
         id: Date.now().toString(),
         type: operationType,
+        action: operationType,
         strategyIds: selectedStrategies,
         data: operationData,
         status: 'pending',
@@ -86,7 +87,7 @@ export const BulkOperationsPanel: React.FC<BulkOperationsPanelProps> = () => {
         setOperationType('');
         setOperationData({});
       } else {
-        toast.error(`Failed to execute operation: ${result.error}`);
+        toast.error(`Failed to execute operation: ${result.errors?.[0] || 'Unknown error'}`);
       }
     } catch (error) {
       toast.error('An error occurred while executing the operation');

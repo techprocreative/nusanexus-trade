@@ -81,6 +81,10 @@ const MobileTradingInterface: React.FC<MobileTradingInterfaceProps> = ({
         }
       }
     }
+  }, {
+    drag: {
+      axis: 'x'
+    }
   });
 
   const isPositive = priceChange >= 0;
@@ -201,7 +205,7 @@ const MobileTradingInterface: React.FC<MobileTradingInterfaceProps> = ({
 
       {/* Swipe Trading Area */}
       <motion.div 
-        {...bind()}
+
         className="glass-card p-6 cursor-grab active:cursor-grabbing touch-pan-x"
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}

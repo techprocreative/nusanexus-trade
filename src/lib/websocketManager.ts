@@ -137,7 +137,11 @@ class WebSocketManager {
       }
       
       if (message.type === 'error') {
-        errorHandler.handleError(new Error(message.data?.message || 'WebSocket error'), {
+        errorHandler.handleApiError({
+          code: 'WEBSOCKET_ERROR',
+          message: message.data?.message || 'WebSocket error',
+          timestamp: new Date().toISOString()
+        }, {
           context: 'websocket',
           severity: 'medium',
         });
@@ -151,7 +155,11 @@ class WebSocketManager {
       this.emit('message', message);
     } catch (error) {
       console.error('Failed to parse WebSocket message:', error);
-      errorHandler.handleError(error as Error, {
+      errorHandler.handleApiError({
+        code: 'WEBSOCKET_PARSE_ERROR',
+        message: (error as Error).message,
+        timestamp: new Date().toISOString()
+      }, {
         context: 'websocket_parse',
         severity: 'low',
       });
@@ -159,7 +167,7 @@ class WebSocketManager {
   }
 
   private routeMessage(message: WebSocketMessage): void {
-    const channel = message.channel || message.type;
+    const channel = message.type;
     const channelSubs = this.channelSubscriptions.get(channel);
     
     if (channelSubs) {
@@ -363,7 +371,11 @@ class WebSocketManager {
     this.emit('error', error);
     this.emit('stateChange', { state: 'error', error });
     
-    errorHandler.handleError(new Error('WebSocket connection error'), {
+    errorHandler.handleApiError({
+      code: 'WEBSOCKET_CONNECTION_ERROR',
+      message: 'WebSocket connection error',
+      timestamp: new Date().toISOString()
+    }, {
       context: 'websocket_connection',
       severity: 'high',
     });

@@ -336,7 +336,9 @@ export const NavigationHaptics = {
   swipe: () => triggerHaptic('swipe'),
   pullToRefresh: () => triggerHaptic('pullToRefresh'),
   selection: () => triggerHaptic('selection'),
-  longPress: () => triggerHaptic('longPress')
+  longPress: () => triggerHaptic('longPress'),
+  success: () => triggerHaptic('success'),
+  error: () => triggerHaptic('error')
 };
 
 // Chart interaction haptics

@@ -306,6 +306,7 @@ export interface ChartDataPoint {
   date: Date;
   value: number;
   label?: string;
+  priceChange?: number;
 }
 
 export interface PerformanceChartData {

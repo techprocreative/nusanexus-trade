@@ -57,6 +57,9 @@ export interface PerformanceMetrics {
   calmarRatio: number;
   sortinoRatio: number;
   returnOnInvestment: number;
+  averageReturn?: number;
+  bestTrade?: TradeResult;
+  worstTrade?: TradeResult;
 }
 
 export interface StrategyCreator {
@@ -93,6 +96,7 @@ export interface ChartDataPoint {
   date: string;
   value: number;
   label?: string;
+  priceChange?: number;
 }
 
 export interface MonthlyReturn {
@@ -155,6 +159,26 @@ export interface ParameterConstraints {
   validation?: string;
 }
 
+export interface ParameterDefinition {
+  name: string;
+  type: 'number' | 'string' | 'boolean' | 'select' | 'range';
+  defaultValue: any;
+  constraints?: ParameterConstraints;
+  description?: string;
+  label?: string;
+  displayName?: string;
+  min?: number;
+  max?: number;
+  step?: number;
+  validation?: {
+    min?: number;
+    max?: number;
+    pattern?: string;
+  };
+  options?: Array<{ label: string; value: any }>;
+  required?: boolean;
+}
+
 export interface Favorite {
   id: string;
   userId: string;
@@ -206,9 +230,14 @@ export interface StrategyListResponse {
 
 // Bulk Operations Types
 export interface BulkOperation {
-  action: 'activate' | 'deactivate' | 'delete' | 'export' | 'clone' | 'addToFavorites' | 'removeFromFavorites';
+  id: string;
+  type: 'delete' | 'duplicate' | 'export' | 'activate' | 'deactivate' | 'tag' | 'archive' | 'clone';
+  action: string;
   strategyIds: string[];
-  parameters?: Record<string, any>;
+  data?: any;
+  status?: string;
+  createdAt?: string;
+  progress?: number;
 }
 
 export interface BulkOperationResult {
@@ -228,6 +257,8 @@ export interface AISuggestion {
   confidence: number;
   impact: 'low' | 'medium' | 'high';
   actionable: boolean;
+  priority: 'low' | 'medium' | 'high';
+  expectedImpact: number;
   parameters?: Record<string, any>;
   expectedImprovement?: {
     metric: string;
@@ -245,6 +276,12 @@ export interface Optimization {
   expectedImprovement: number;
   confidence: number;
   reasoning: string;
+  name: string;
+  description: string;
+  priority: 'low' | 'medium' | 'high';
+  expectedReturn: number;
+  riskReduction: number;
+  implementationTime: string;
 }
 
 export interface CompatibilityScore {
@@ -266,10 +303,13 @@ export interface AIRecommendationsRequest {
     preferredAssets: string[];
   };
   riskTolerance?: 'low' | 'medium' | 'high';
+  strategyIds?: string[];
+  analysisType?: string;
 }
 
 export interface AIRecommendationsResponse {
   suggestions: AISuggestion[];
+  recommendations: AISuggestion[];
   optimizations: Optimization[];
   marketCompatibility: CompatibilityScore[];
   riskAssessment: {
@@ -334,9 +374,11 @@ export interface BulkOperationsState {
 
 export interface AIInsightsState {
   recommendations: AIRecommendationsResponse | null;
+  optimizations: Optimization[];
   loading: boolean;
   error: string | null;
   lastUpdated: string | null;
+  isOpen: boolean;
 }
 
 // Component Props Types
@@ -444,7 +486,32 @@ export interface StrategyBuilderState {
   saveStrategy: () => Promise<void>;
   loadStrategy: (id: string) => Promise<void>;
   exportStrategy: () => string;
+  importStrategy: (data: string) => void;
   clearStrategy: () => void;
+  
+  // Strategy Management
+  duplicateStrategy: (id: string, newName?: string) => Promise<Strategy | null>;
+  deleteStrategy: (id: string) => Promise<void>;
+  getAllStrategies: () => Strategy[];
+  searchStrategies: (query: string, tags?: string[]) => Strategy[];
+  
+  // Template Management
+  saveAsTemplate: (templateData: Partial<StrategyTemplate>) => Promise<StrategyTemplate | null>;
+  createFromTemplate: (templateId: string, customName?: string) => void;
+  getAllTemplates: () => StrategyTemplate[];
+  deleteTemplate: (id: string) => Promise<void>;
+  
+  // Sharing Features
+  shareStrategy: (isPublic?: boolean) => Promise<string | null>;
+  loadSharedStrategy: (shareId: string) => Promise<void>;
+  getSharedStrategies: () => any[];
+  
+  // Utility Methods
+  generateStrategyStats: () => any;
+  addComponentFromDefinition: (definition: any, position: { x: number; y: number }) => void;
+  updateComponentPosition: (nodeId: string, position: { x: number; y: number }) => void;
+  loadStrategyAsTemplate: (strategyId: string) => Promise<void>;
+  updateNodeParameters: (nodeId: string, parameters: Record<string, any>) => void;
 }
 
 export interface StrategyConnection {
@@ -492,7 +559,7 @@ export interface ComponentDefinition {
   type: ComponentType;
   description: string;
   category: string;
-  parameters: Record<string, any>;
+  parameters: ParameterDefinition[];
   inputs: string[];
   outputs: string[];
   icon?: any;

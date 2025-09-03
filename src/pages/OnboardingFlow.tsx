@@ -148,15 +148,23 @@ const OnboardingFlow: React.FC = () => {
       id: '1',
       name: onboardingData.personalInfo.name,
       email: onboardingData.personalInfo.email,
-      experience: onboardingData.personalInfo.experience,
       riskTolerance: onboardingData.tradingGoals.riskTolerance,
-      tradingStyle: onboardingData.preferences.tradingStyle,
-      preferredMarkets: onboardingData.preferences.markets,
-      accountBalance: onboardingData.preferences.capitalAmount,
-      totalPnL: 0,
-      winRate: 0,
-      createdAt: new Date(),
-      lastActive: new Date()
+      tradingExperience: {
+        yearsTrading: onboardingData.personalInfo.tradingYears,
+        preferredMarkets: onboardingData.preferences.markets,
+        tradingStyle: 'day_trading',
+        averageTradeSize: onboardingData.preferences.capitalAmount
+      },
+      preferences: {
+        maxDrawdown: 0.1,
+        targetReturn: onboardingData.tradingGoals.targetReturn / 100,
+        notificationSettings: {
+          email: true,
+          push: true,
+          sms: false
+        }
+      },
+      subscriptionTier: 'free'
     });
     
     setIsCompleting(false);

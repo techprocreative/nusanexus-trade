@@ -15,7 +15,7 @@ import {
   Percent
 } from 'lucide-react';
 import { LazyImage } from './LazyImage';
-import { usePerformanceMonitoring } from '../../utils/mobilePerformance';
+import { usePerformanceMonitoring, measurePerformance } from '../../utils/mobilePerformance';
 import { useMobileData } from '../../utils/mobileDataManager';
 import { NavigationHaptics } from '../../utils/hapticFeedback';
 
@@ -94,63 +94,54 @@ export const OptimizedMobilePortfolio: React.FC<{
   const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
   const [showFilters, setShowFilters] = useState(false);
   
-  const { shouldOptimize, measurePerformance } = usePerformanceMonitoring();
+  const { shouldOptimize } = usePerformanceMonitoring();
   const { cacheData, getCachedData } = useMobileData();
 
   // Calculate portfolio summary
   const portfolioSummary = useMemo((): PortfolioSummary => {
-    return measurePerformance('portfolio-calculation', () => {
-      const totalValue = assets.reduce((sum, asset) => sum + asset.value, 0);
-      const totalChange24h = assets.reduce((sum, asset) => sum + asset.change24h, 0);
-      const totalChangePercent24h = totalValue > 0 ? (totalChange24h / (totalValue - totalChange24h)) * 100 : 0;
-      
-      return {
-        totalValue,
-        totalChange24h,
-        totalChangePercent24h,
-        totalPnL: totalChange24h, // Simplified for demo
-        totalPnLPercent: totalChangePercent24h
-      };
-    });
+    const totalValue = assets.reduce((sum, asset) => sum + asset.value, 0);
+    const totalChange24h = assets.reduce((sum, asset) => sum + asset.change24h, 0);
+    const totalChangePercent24h = totalValue > 0 ? (totalChange24h / totalValue) * 100 : 0;
+    const totalPnL = assets.reduce((sum, asset) => sum + asset.change24h, 0);
+    const totalPnLPercent = totalValue > 0 ? (totalPnL / totalValue) * 100 : 0;
+
+    return {
+      totalValue,
+      totalChange24h,
+      totalChangePercent24h,
+      totalPnL,
+      totalPnLPercent
+    };
   }, [assets]);
 
   // Filter and sort assets
   const filteredAssets = useMemo(() => {
-    return measurePerformance('asset-filtering', () => {
-      let filtered = assets;
-      
-      // Apply search filter
-      if (searchQuery) {
-        filtered = filtered.filter(asset => 
-          asset.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          asset.name.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-      }
-      
-      // Apply sorting
-      filtered.sort((a, b) => {
-        switch (sortBy) {
-          case 'value':
-            return b.value - a.value;
-          case 'change':
-            return b.changePercent24h - a.changePercent24h;
-          case 'name':
-            return a.name.localeCompare(b.name);
-          default:
-            return 0;
-        }
-      });
-      
-      return filtered;
-    });
+    let filtered = [...assets];
+    
+    if (searchQuery) {
+      filtered = filtered.filter(asset => 
+        asset.symbol.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        asset.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    if (sortBy === 'value') {
+      filtered.sort((a, b) => b.value - a.value);
+    } else if (sortBy === 'change') {
+      filtered.sort((a, b) => b.change24h - a.change24h);
+    } else if (sortBy === 'name') {
+      filtered.sort((a, b) => a.symbol.localeCompare(b.symbol));
+    }
+    
+    return filtered;
   }, [assets, searchQuery, sortBy]);
 
   // Load cached data on mount
   useEffect(() => {
     const loadCachedData = async () => {
       const cached = await getCachedData('portfolio-assets');
-      if (cached) {
-        setAssets(cached);
+      if (cached && Array.isArray(cached)) {
+        setAssets(cached as PortfolioAsset[]);
       }
     };
     loadCachedData();
@@ -158,7 +149,7 @@ export const OptimizedMobilePortfolio: React.FC<{
 
   // Cache data when assets change
   useEffect(() => {
-    cacheData('portfolio-assets', assets, { ttl: 300000 }); // 5 minutes
+    cacheData('portfolio-assets', assets, 'medium'); // Cache with medium priority
   }, [assets, cacheData]);
 
   const handleRefresh = async () => {

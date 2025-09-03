@@ -48,6 +48,8 @@ const mockOrder: Order = {
   quantity: 100,
   price: 150.00,
   status: 'filled',
+  filledQuantity: 100,
+  averagePrice: 150.00,
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T00:00:00Z',
 };
@@ -61,17 +63,28 @@ const mockPosition: Position = {
   currentPrice: 155.00,
   unrealizedPnL: 500.00,
   unrealizedPnLPercent: 3.33,
-  openedAt: '2024-01-01T00:00:00Z',
+  realizedPnL: 200.00,
+  marginUsed: 7500,
+  createdAt: '2024-01-01T00:00:00Z',
+  updatedAt: '2024-01-01T00:00:00Z',
 };
 
 const mockPortfolio: Portfolio = {
   totalValue: 100000,
-  totalPnL: 5000,
-  totalPnLPercent: 5.0,
   availableBalance: 50000,
-  usedMargin: 50000,
-  freeMargin: 50000,
+  marginUsed: 50000,
+  unrealizedPnL: 500,
+  realizedPnL: 4500,
+  totalPnL: 5000,
+  dayPnL: 300,
   positions: [mockPosition],
+  openOrders: 2,
+  performance: {
+    daily: 0.3,
+    weekly: 1.2,
+    monthly: 4.5,
+    yearly: 15.2,
+  },
 };
 
 const mockMarketData: MarketData = {
@@ -394,15 +407,19 @@ describe('useApiQueries', () => {
         const strategyData = {
           name: 'Test Strategy',
           description: 'A test strategy',
+          type: 'automated' as const,
           symbols: ['AAPL'],
-          riskLevel: 'low' as const,
-          parameters: { rsi_period: {} },
-          riskSettings: {
-            maxRiskPerTrade: 10,
-            maxDailyLoss: 100,
-            maxDrawdown: 20,
-            positionSizing: 'percentage' as const,
-            stopLossType: 'fixed' as const
+          timeframes: ['1h', '4h'],
+          parameters: {
+            entryConditions: { rsi_period: 14 },
+            exitConditions: { take_profit: 0.05 },
+            riskManagement: {
+              maxPositionSize: 1000,
+              stopLossPercent: 2,
+              takeProfitPercent: 5,
+              maxDailyLoss: 100,
+              maxDrawdown: 20
+            }
           }
         };
 

@@ -198,14 +198,14 @@ const SecuritySettings: React.FC = () => {
     
     try {
       await updateSecurityPreferences({
-        two_factor_enabled: securityForm.twoFactorEnabled,
-        login_notifications: securityForm.loginNotifications,
-        session_timeout: securityForm.sessionTimeout,
-        ip_whitelist: securityForm.ipWhitelist,
-        device_trust: securityForm.deviceTrust,
-        privacy_mode: securityForm.privacyMode,
-        data_retention: securityForm.dataRetention,
-        audit_log: securityForm.auditLog
+        twoFactorEnabled: securityForm.twoFactorEnabled,
+        loginNotifications: securityForm.loginNotifications,
+        sessionTimeout: securityForm.sessionTimeout,
+        ipWhitelist: securityForm.ipWhitelist,
+        deviceTrust: securityForm.deviceTrust,
+        privacyMode: securityForm.privacyMode,
+        dataRetention: securityForm.dataRetention,
+        auditLog: securityForm.auditLog
       });
       toast.success('Security preferences updated successfully');
       setHasChanges(false);

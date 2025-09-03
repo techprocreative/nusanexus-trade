@@ -26,7 +26,7 @@ export const AIInsightsDashboard: React.FC<AIInsightsDashboardProps> = () => {
   const [selectedSuggestion, setSelectedSuggestion] = useState<AISuggestion | null>(null);
 
   useEffect(() => {
-    if (aiInsights.isOpen && !aiInsights.recommendations.length) {
+    if (aiInsights.isOpen && (!aiInsights.recommendations?.recommendations?.length && !aiInsights.recommendations?.suggestions?.length)) {
       loadRecommendations();
     }
   }, [aiInsights.isOpen]);
@@ -36,9 +36,7 @@ export const AIInsightsDashboard: React.FC<AIInsightsDashboardProps> = () => {
     try {
       await fetchAIRecommendations({
         strategyIds: strategies.slice(0, 10).map(s => s.id), // Limit to first 10 for demo
-        analysisType: 'comprehensive',
-        includeOptimizations: true,
-        includeRiskAnalysis: true
+        analysisType: 'comprehensive'
       });
     } catch (error) {
       toast.error('Failed to load AI recommendations');
@@ -49,12 +47,8 @@ export const AIInsightsDashboard: React.FC<AIInsightsDashboardProps> = () => {
 
   const handleApplyOptimization = async (optimization: Optimization) => {
     try {
-      const result = await applyOptimization(optimization.strategyId, optimization);
-      if (result) {
-        toast.success('Optimization applied successfully');
-      } else {
-        toast.error('Failed to apply optimization');
-      }
+      await applyOptimization(optimization);
+      toast.success('Optimization applied successfully');
     } catch (error) {
       toast.error('An error occurred while applying optimization');
     }
@@ -170,7 +164,7 @@ export const AIInsightsDashboard: React.FC<AIInsightsDashboardProps> = () => {
                       <Card>
                         <CardContent className="p-4 text-center">
                           <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">
-                            {aiInsights.recommendations.filter(r => r.priority === 'high').length}
+                            {aiInsights.recommendations?.recommendations?.filter(r => r.priority === 'high').length || 0}
                           </div>
                           <div className="text-sm text-slate-600 dark:text-slate-400">High Priority Actions</div>
                           <Progress value={75} className="mt-2 h-2" />
@@ -232,7 +226,7 @@ export const AIInsightsDashboard: React.FC<AIInsightsDashboardProps> = () => {
                       </CardHeader>
                       <CardContent>
                         <div className="space-y-3">
-                          {aiInsights.recommendations.slice(0, 3).map((suggestion) => (
+                          {(aiInsights.recommendations?.recommendations || []).slice(0, 3).map((suggestion) => (
                             <div key={suggestion.id} className="flex items-start gap-3 p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                               <div className={`p-2 rounded-lg ${getSuggestionColor(suggestion.type)}`}>
                                 {getSuggestionIcon(suggestion.type)}
@@ -270,7 +264,7 @@ export const AIInsightsDashboard: React.FC<AIInsightsDashboardProps> = () => {
 
               <TabsContent value="recommendations" className="space-y-4">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                  {aiInsights.recommendations.map((suggestion) => (
+                  {(aiInsights.recommendations?.recommendations || []).map((suggestion) => (
                     <Card key={suggestion.id} className="cursor-pointer hover:shadow-md transition-shadow"
                           onClick={() => setSelectedSuggestion(suggestion)}>
                       <CardContent className="p-4">

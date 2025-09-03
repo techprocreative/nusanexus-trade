@@ -18,7 +18,8 @@ import type {
   StrategyLibraryState,
   StrategyModalState,
   BulkOperationsState,
-  AIInsightsState
+  AIInsightsState,
+  Optimization
 } from '@/types/strategy';
 
 interface StrategyStore extends StrategyLibraryState {
@@ -51,6 +52,7 @@ interface StrategyStore extends StrategyLibraryState {
   // Selection
   toggleStrategySelection: (id: string) => void;
   selectAllStrategies: () => void;
+  deselectAllStrategies: () => void;
   clearSelection: () => void;
   
   // Favorites
@@ -62,7 +64,11 @@ interface StrategyStore extends StrategyLibraryState {
   
   // Bulk operations
   performBulkOperation: (operation: BulkOperation) => Promise<BulkOperationResult>;
+  executeBulkOperation: (operation: BulkOperation) => Promise<BulkOperationResult>;
   setBulkOperationsOpen: (isOpen: boolean) => void;
+  closeBulkOperationsPanel: () => void;
+  closeAIInsightsDashboard: () => void;
+  applyOptimization: (optimization: Optimization) => Promise<void>;
   
   // Modal management
   openStrategyModal: (strategyId: string, tab?: StrategyModalState['activeTab']) => void;
@@ -120,9 +126,11 @@ const initialBulkOperationsState: BulkOperationsState = {
 
 const initialAIInsightsState: AIInsightsState = {
   recommendations: null,
+  optimizations: [],
   loading: false,
   error: null,
-  lastUpdated: null
+  lastUpdated: null,
+  isOpen: false,
 };
 
 export const useStrategyStore = create<StrategyStore>()(devtools(
@@ -703,6 +711,24 @@ export const useStrategyStore = create<StrategyStore>()(devtools(
       try {
         // Mock AI recommendations for now
         const mockRecommendations: AIRecommendationsResponse = {
+          recommendations: [
+            {
+              id: '1',
+              type: 'strategy',
+              title: 'Consider Mean Reversion Strategy',
+              description: 'Current market conditions favor mean reversion approaches',
+              confidence: 0.85,
+              impact: 'high',
+              actionable: true,
+              priority: 'high',
+              expectedImpact: 15.2,
+              expectedImprovement: {
+                metric: 'Sharpe Ratio',
+                value: 0.3,
+                unit: 'points'
+              }
+            }
+          ],
           suggestions: [
             {
               id: '1',
@@ -712,6 +738,8 @@ export const useStrategyStore = create<StrategyStore>()(devtools(
               confidence: 0.85,
               impact: 'high',
               actionable: true,
+              priority: 'high',
+              expectedImpact: 15.2,
               expectedImprovement: {
                 metric: 'Sharpe Ratio',
                 value: 0.3,
@@ -814,6 +842,28 @@ export const useStrategyStore = create<StrategyStore>()(devtools(
       }));
       
       await get().fetchStrategies();
+    },
+
+    // Close AI insights dashboard
+    closeAIInsightsDashboard: () => {
+      set(state => ({
+        aiInsights: {
+          ...state.aiInsights,
+          isOpen: false
+        }
+      }));
+    },
+
+    // Apply optimization
+    applyOptimization: async (optimization) => {
+      try {
+        // Mock implementation - in real app, this would apply the optimization to the strategy
+        console.log('Applying optimization:', optimization);
+        // You could update the strategy parameters here
+      } catch (error) {
+        console.error('Error applying optimization:', error);
+        throw error;
+      }
     },
 
     // Reset state

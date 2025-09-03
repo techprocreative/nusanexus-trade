@@ -1,4 +1,6 @@
 import { create } from 'zustand';
+import { devtools } from 'zustand/middleware';
+import { TradeResult } from '../types/strategy';
 
 export interface UserProfile {
   id: string;
@@ -71,6 +73,9 @@ export interface PerformanceMetrics {
   averageWin: number;
   averageLoss: number;
   totalTrades: number;
+  averageReturn?: number;
+  bestTrade?: TradeResult;
+  worstTrade?: TradeResult;
 }
 
 export interface SimulationResult {
@@ -112,10 +117,15 @@ export interface ImplementationStep {
   strategyId: string;
   title: string;
   description: string;
-  estimatedTime: number;
-  completed: boolean;
-  details: string[];
   order: number;
+  status: 'pending' | 'in_progress' | 'completed' | 'failed';
+  estimatedTime: number; // in minutes
+  difficulty: 'easy' | 'medium' | 'hard';
+  instructions: string[];
+  resources: string[];
+  prerequisites: string[];
+  dependencies: string[];
+  codeExample?: string;
 }
 
 export interface EducationalContent {

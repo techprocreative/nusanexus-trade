@@ -1,5 +1,5 @@
 import { useGesture } from '@use-gesture/react';
-import { useSpring, config } from '@react-spring/web';
+import { useSpring, config as springConfig } from '@react-spring/web';
 import { useState, useCallback, useRef } from 'react';
 
 interface GestureConfig {
@@ -24,7 +24,7 @@ interface GestureState {
   swipeDirection: 'left' | 'right' | 'up' | 'down' | null;
 }
 
-export const useGestures = (config: GestureConfig = {}) => {
+export const useGestures = (gestureConfig: GestureConfig = {}) => {
   const {
     onSwipeLeft,
     onSwipeRight,
@@ -38,7 +38,7 @@ export const useGestures = (config: GestureConfig = {}) => {
     swipeThreshold = 100,
     velocityThreshold = 0.5,
     refreshThreshold = 80
-  } = config;
+  } = gestureConfig;
 
   const [gestureState, setGestureState] = useState<GestureState>({
     isRefreshing: false,
@@ -55,13 +55,13 @@ export const useGestures = (config: GestureConfig = {}) => {
     y: 0,
     opacity: 0,
     scale: 0.8,
-    config: config.gentle
+    config: springConfig.wobbly
   }));
 
   // Spring animation for pinch zoom
   const [pinchSpring, pinchApi] = useSpring(() => ({
     scale: 1,
-    config: config.gentle
+    config: springConfig.wobbly
   }));
 
   // Haptic feedback helper
@@ -197,10 +197,6 @@ export const useGestures = (config: GestureConfig = {}) => {
         setGestureState(prev => ({ ...prev, isPinching: false }));
         hapticFeedback(10);
       }
-    },
-    
-    onTap: () => {
-      handleDoubleTap();
     }
   }, {
     drag: {

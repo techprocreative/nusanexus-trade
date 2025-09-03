@@ -129,8 +129,6 @@ class ErrorBoundary extends Component<Props, State> {
       }
 
       const errorMessage = this.getErrorMessage(this.state.error!);
-      const isNetworkError = this.state.error?.message.includes('fetch') || 
-                            this.state.error?.message.includes('network');
 
       return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">

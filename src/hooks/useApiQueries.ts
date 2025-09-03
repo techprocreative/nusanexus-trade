@@ -20,6 +20,7 @@ import {
   CreateOrderRequest,
   Order,
   UpdateOrderRequest,
+  ModifyOrderRequest,
   CancelOrderRequest,
   Position,
   Portfolio,
@@ -34,6 +35,29 @@ import {
   UpdateUserRequest
 } from '../types/api';
 
+// Filter interfaces for query keys
+interface OrderHistoryFilters {
+  symbol?: string;
+  side?: string;
+  status?: string;
+  startDate?: string;
+  endDate?: string;
+  pageSize?: number;
+}
+
+interface SymbolFilters {
+  search?: string;
+  category?: string;
+  isActive?: boolean;
+}
+
+interface AIRecommendationFilters {
+  symbol?: string;
+  timeframe?: string;
+  priority?: string;
+  strategy?: string; // Used in tests
+}
+
 // Query Keys Factory
 export const queryKeys = {
   // Authentication
@@ -43,7 +67,7 @@ export const queryKeys = {
   // Trading
   orders: ['orders'] as const,
   order: (orderId: string) => ['orders', orderId] as const,
-  orderHistory: (filters?: any) => ['orders', 'history', filters] as const,
+  orderHistory: (filters?: OrderHistoryFilters) => ['orders', 'history', filters] as const,
   
   // Positions & Portfolio
   positions: ['positions'] as const,
@@ -60,11 +84,11 @@ export const queryKeys = {
   // Market Data
   marketData: ['market-data'] as const,
   symbol: (symbol: string) => ['market-data', 'symbol', symbol] as const,
-  symbols: (filters?: any) => ['market-data', 'symbols', filters] as const,
-  
+  symbols: (filters?: SymbolFilters) => ['market-data', 'symbols', filters] as const,
+
   // AI Analysis
   aiAnalysis: ['ai-analysis'] as const,
-  aiRecommendations: (filters?: any) => ['ai-analysis', 'recommendations', filters] as const,
+  aiRecommendations: (filters?: AIRecommendationFilters) => ['ai-analysis', 'recommendations', filters] as const,
 } as const;
 
 // Default query options
@@ -91,7 +115,7 @@ export const useLogin = (options?: UseMutationOptions<LoginResponse, ApiError, L
     },
     onSuccess: (data) => {
       // Store tokens
-      apiClient.setAuthToken(data.accessToken);
+      apiClient.setAuthToken(data.tokens.accessToken);
       
       // Invalidate and refetch user data
       queryClient.invalidateQueries({ queryKey: queryKeys.auth });
@@ -207,11 +231,11 @@ export const useCreateOrder = (options?: UseMutationOptions<Order, ApiError, Cre
   });
 };
 
-export const useUpdateOrder = (options?: UseMutationOptions<Order, ApiError, UpdateOrderRequest>) => {
+export const useUpdateOrder = (options?: UseMutationOptions<Order, ApiError, ModifyOrderRequest>) => {
   const queryClient = useQueryClient();
   
   return useMutation({
-    mutationFn: async (orderData: UpdateOrderRequest) => {
+    mutationFn: async (orderData: ModifyOrderRequest) => {
       const response = await apiClient.put<Order>(`/trading/orders/${orderData.orderId}`, orderData);
       return response.data;
     },
@@ -269,7 +293,7 @@ export const useOrderHistory = (
     },
     initialPageParam: 1,
     getNextPageParam: (lastPage) => {
-      return lastPage.hasNextPage ? lastPage.page + 1 : undefined;
+      return lastPage.pagination.hasNext ? lastPage.pagination.page + 1 : undefined;
     },
     ...defaultQueryOptions,
     staleTime: 2 * 60 * 1000, // 2 minutes for history
@@ -356,7 +380,7 @@ export const useMarketData = (
   options?: UseQueryOptions<MarketData[], ApiError>
 ) => {
   return useQuery({
-    queryKey: queryKeys.symbols(request),
+    queryKey: queryKeys.symbols(),
     queryFn: async () => {
       const response = await apiClient.post<MarketData[]>('/market-data', request);
       return response.data;

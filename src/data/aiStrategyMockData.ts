@@ -254,9 +254,15 @@ export const mockUserFeedback: UserFeedback[] = [
   {
     id: 'feedback-1',
     userId: 'user-1',
+    userName: 'John Doe',
+    userAvatar: '/api/placeholder/40/40',
+    isVerified: true,
     recommendationId: 'rec-1',
+    strategyName: 'ML Momentum Strategy',
     rating: 5,
+    comment: 'Excellent strategy recommendation! The ML signals have been very accurate and the risk management is solid.',
     comments: 'Excellent strategy recommendation! The ML signals have been very accurate and the risk management is solid.',
+    category: 'performance',
     implemented: true,
     performanceData: {
       totalReturn: 24.3,
@@ -270,14 +276,21 @@ export const mockUserFeedback: UserFeedback[] = [
       averageLoss: -1.3,
       totalTrades: 156
     },
+    helpfulCount: 12,
     createdAt: new Date('2024-01-20T13:25:00Z')
   },
   {
     id: 'feedback-2',
     userId: 'user-1',
+    userName: 'Jane Smith',
+    userAvatar: '/api/placeholder/40/40',
+    isVerified: false,
     recommendationId: 'rec-2',
+    strategyName: 'Trend Following Strategy',
     rating: 4,
+    comment: 'Good strategy but required some parameter tuning for my specific market conditions. Overall satisfied with the results.',
     comments: 'Good strategy but required some parameter tuning for my specific market conditions. Overall satisfied with the results.',
+    category: 'usability',
     implemented: true,
     performanceData: {
       totalReturn: 19.7,
@@ -291,6 +304,7 @@ export const mockUserFeedback: UserFeedback[] = [
       averageLoss: -1.2,
       totalTrades: 89
     },
+    helpfulCount: 8,
     createdAt: new Date('2024-01-18T10:15:00Z')
   }
 ];
@@ -374,104 +388,132 @@ export const mockImplementationSteps = [
     strategyId: 'strategy-1',
     title: 'Setup Moving Average Indicators',
     description: 'Configure the short-term and long-term moving averages on your trading platform.',
-    estimatedTime: 15,
-    completed: false,
     order: 1,
-    details: [
+    status: 'pending' as const,
+    estimatedTime: 15,
+    difficulty: 'easy' as const,
+    instructions: [
       'Add 10-period EMA to your chart',
       'Add 20-period EMA to your chart',
       'Set different colors for easy identification',
       'Ensure both are applied to closing prices'
-    ]
+    ],
+    resources: ['Trading platform documentation', 'EMA calculation guide'],
+    prerequisites: ['Trading platform access'],
+    dependencies: []
   },
   {
     id: 'step-2',
     strategyId: 'strategy-1',
     title: 'Configure Volume Analysis',
     description: 'Set up volume indicators to confirm breakout signals.',
-    estimatedTime: 20,
-    completed: false,
     order: 2,
-    details: [
+    status: 'pending' as const,
+    estimatedTime: 20,
+    difficulty: 'medium' as const,
+    instructions: [
       'Add volume histogram to your chart',
       'Calculate 20-period volume moving average',
       'Set volume threshold at 1.5x average',
       'Configure volume alerts'
-    ]
+    ],
+    resources: ['Volume analysis guide', 'Alert setup tutorial'],
+    prerequisites: ['Step 1 completed'],
+    dependencies: ['step-1']
   },
   {
     id: 'step-3',
     strategyId: 'strategy-1',
     title: 'Implement Entry Rules',
     description: 'Define precise entry conditions for the strategy.',
-    estimatedTime: 30,
-    completed: false,
     order: 3,
-    details: [
+    status: 'pending' as const,
+    estimatedTime: 30,
+    difficulty: 'medium' as const,
+    instructions: [
       'Enter long when short MA crosses above long MA',
       'Confirm with volume > 1.5x average',
       'Check sentiment score > 0.3',
       'Set stop loss at 2% below entry'
-    ]
+    ],
+    resources: ['Entry rules documentation', 'Risk management guide'],
+    prerequisites: ['Steps 1-2 completed'],
+    dependencies: ['step-1', 'step-2']
   },
   {
     id: 'step-4',
     strategyId: 'strategy-1',
     title: 'Set Exit Conditions',
     description: 'Configure exit rules and risk management.',
-    estimatedTime: 25,
-    completed: false,
     order: 4,
-    details: [
+    status: 'pending' as const,
+    estimatedTime: 25,
+    difficulty: 'medium' as const,
+    instructions: [
       'Exit when short MA crosses below long MA',
       'Take profit at 3:1 risk-reward ratio',
       'Trail stop loss using 10-period low',
       'Maximum holding period: 30 days'
-    ]
+    ],
+    resources: ['Exit strategy guide', 'Trailing stop tutorial'],
+    prerequisites: ['Step 3 completed'],
+    dependencies: ['step-3']
   },
   {
     id: 'step-5',
     strategyId: 'strategy-1',
     title: 'Backtesting and Optimization',
     description: 'Test the strategy on historical data before going live.',
-    estimatedTime: 60,
-    completed: false,
     order: 5,
-    details: [
+    status: 'pending' as const,
+    estimatedTime: 60,
+    difficulty: 'hard' as const,
+    instructions: [
       'Run backtest on 2+ years of data',
       'Analyze key performance metrics',
       'Optimize parameters if needed',
       'Paper trade for 1 month minimum'
-    ]
+    ],
+    resources: ['Backtesting software', 'Performance analysis guide'],
+    prerequisites: ['All previous steps completed'],
+    dependencies: ['step-1', 'step-2', 'step-3', 'step-4']
   },
   {
     id: 'step-6',
     strategyId: 'strategy-2',
     title: 'Setup RSI Indicator',
     description: 'Configure RSI indicator for mean reversion signals.',
-    estimatedTime: 10,
-    completed: false,
     order: 1,
-    details: [
+    status: 'pending' as const,
+    estimatedTime: 10,
+    difficulty: 'easy' as const,
+    instructions: [
       'Add 14-period RSI to your chart',
       'Set overbought level at 70',
       'Set oversold level at 30',
       'Configure RSI alerts'
-    ]
+    ],
+    resources: ['RSI indicator guide', 'Alert configuration tutorial'],
+    prerequisites: ['Trading platform access'],
+    dependencies: []
   },
   {
     id: 'step-7',
     strategyId: 'strategy-2',
     title: 'Implement Mean Reversion Logic',
     description: 'Set up entry and exit rules for mean reversion strategy.',
-    estimatedTime: 35,
-    completed: false,
     order: 2,
-    details: [
+    status: 'pending' as const,
+    estimatedTime: 35,
+    difficulty: 'medium' as const,
+    instructions: [
       'Enter short when RSI > 70',
       'Enter long when RSI < 30',
       'Confirm with price action',
       'Set tight stop losses'
-    ]
+    ],
+    resources: ['Mean reversion strategy guide', 'Price action analysis'],
+    prerequisites: ['Step 6 completed'],
+    dependencies: ['step-6']
   }
 ];

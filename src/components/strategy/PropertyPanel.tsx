@@ -54,12 +54,12 @@ const PropertyPanel: React.FC<PropertyPanelProps> = ({ selectedNodeId }) => {
       switch (param.type) {
         case 'number':
           field = z.number();
-          if (param.validation?.min !== undefined) {
-            field = (field as z.ZodNumber).min(param.validation.min);
-          }
-          if (param.validation?.max !== undefined) {
-            field = (field as z.ZodNumber).max(param.validation.max);
-          }
+          if (param.min !== undefined) {
+          field = (field as z.ZodNumber).min(param.min);
+        }
+        if (param.max !== undefined) {
+          field = (field as z.ZodNumber).max(param.max);
+        }
           break;
           
         case 'string':

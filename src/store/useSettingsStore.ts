@@ -1,8 +1,7 @@
 import { create } from 'zustand';
 import { supabase } from '../lib/supabase';
 import {
-  SettingsState,
-  SettingsActions,
+  SettingsStore,
   UserProfile,
   TradingPreferences,
   UICustomization,
@@ -11,27 +10,37 @@ import {
   DataBackupSettings,
   MT5Connection,
   MT5ConnectionForm,
-  LoginHistory,
-  UserSession,
+  AccountSettingsForm,
+  PasswordChangeForm,
+  NotificationPreferencesForm,
+  TradingPreferencesForm,
+  SecurityPreferencesForm,
+  DataBackupPreferencesForm,
+  ActiveSession,
   BackupCode,
   ExportRequest,
-  MT5TestConnectionResponse,
-  ExportDataResponse,
-  SETTINGS_CATEGORIES
+  MT5TestConnectionResponse
 } from '../types/settings';
 
-interface SettingsStore extends SettingsState, SettingsActions {}
+const SETTINGS_CATEGORIES = {
+  TRADING: 'trading',
+  UI: 'ui',
+  NOTIFICATIONS: 'notifications',
+  SECURITY: 'security',
+  DATA: 'data',
+  DATA_BACKUP: 'data'
+} as const;
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
   // Initial State
   userProfile: null,
+  userSettings: {},
   tradingPreferences: null,
   uiCustomization: null,
   notificationPreferences: null,
   securitySettings: null,
   dataBackupSettings: null,
   mt5Connections: [],
-  loginHistory: [],
   activeSessions: [],
   backupCodes: [],
   exportRequests: [],
@@ -39,6 +48,40 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   error: null,
 
   // Profile Actions
+  updateProfile: async (profile: Partial<AccountSettingsForm>) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .update({ ...profile, updated_at: new Date().toISOString() })
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (error) throw error;
+      set({ userProfile: data, isLoading: false });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  changePassword: async (passwordData: PasswordChangeForm) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { error } = await supabase.auth.updateUser({
+        password: passwordData.newPassword
+      });
+
+      if (error) throw error;
+      set({ isLoading: false });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
   fetchUserProfile: async () => {
     set({ isLoading: true, error: null });
     try {
@@ -78,37 +121,35 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     }
   },
 
-  changePassword: async (currentPassword: string, newPassword: string) => {
+  // Settings Actions
+  fetchUserSettings: async () => {
     set({ isLoading: true, error: null });
+    
     try {
-      const { error } = await supabase.auth.updateUser({
-        password: newPassword
-      });
-
-      if (error) throw error;
-      set({ isLoading: false });
+      // Mock implementation - replace with actual API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      const mockUserSettings = {
+        // Add mock user settings here
+      };
+      
+      set({ userSettings: mockUserSettings, isLoading: false });
     } catch (error) {
-      set({ error: (error as Error).message, isLoading: false });
+      set({ error: error instanceof Error ? error.message : 'Failed to fetch user settings', isLoading: false });
     }
   },
-
-  // Settings Actions
-  fetchSettings: async (category?: string) => {
+  
+  fetchSettings: async () => {
     set({ isLoading: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      let query = supabase
+      const { data, error } = await supabase
         .from('user_settings')
         .select('*')
         .eq('user_id', user.id);
 
-      if (category) {
-        query = query.eq('category', category);
-      }
-
-      const { data, error } = await query;
       if (error) throw error;
 
       // Organize settings by category
@@ -185,166 +226,131 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     }
   },
 
-  updateUICustomization: async (customization: Partial<UICustomization>) => {
+  updateUICustomization: async (settings: Partial<UICustomization>) => {
     set({ isLoading: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
-
-      const currentCustomization = get().uiCustomization || {
-        theme: 'system' as const,
-        primaryColor: '#3b82f6',
-        accentColor: '#10b981',
-        fontSize: 'medium' as const,
-        compactMode: false,
-        showGridLines: true,
-        gridLines: true,
-        soundEnabled: true,
-        showSidebar: true,
-        sidebarCollapsed: false,
-        showToolbar: true,
-        showStatusBar: true,
-        chartTheme: 'dark' as const,
-        animations: true,
-        highContrast: false,
-        density: 'comfortable' as const,
-        currency: 'USD',
-        chartType: 'candlestick' as const,
-        defaultTimeframe: '1h' as const,
-        sidebarPosition: 'left' as const,
-        language: 'en',
-        timezone: 'UTC',
-        dateFormat: 'DD/MM/YYYY' as const,
-        timeFormat: '24h' as const,
-        currencyDisplay: 'symbol' as const
-      };
-      const updatedCustomization = { ...currentCustomization, ...customization };
 
       const { error } = await supabase
         .from('user_settings')
         .upsert({
           user_id: user.id,
           category: SETTINGS_CATEGORIES.UI,
-          data: updatedCustomization,
+          data: { ...get().uiCustomization, ...settings },
           updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
-      set({ uiCustomization: updatedCustomization, isLoading: false });
+      
+      set({
+        uiCustomization: { ...get().uiCustomization, ...settings },
+        isLoading: false
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
   },
 
-  updateNotificationPreferences: async (preferences: Partial<NotificationPreferences>) => {
+  updateNotificationPreferences: async (preferences: Partial<NotificationPreferencesForm>) => {
     set({ isLoading: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
-
-      const currentPreferences = get().notificationPreferences || {
-        emailNotifications: true,
-        pushNotifications: false,
-        smsNotifications: false,
-        tradeAlerts: true,
-        priceAlerts: false,
-        newsAlerts: false,
-        systemAlerts: true,
-        marketOpenClose: false,
-        weeklyReports: true,
-        monthlyReports: false,
-        alertFrequency: 'immediate' as const,
-        quietHours: {
-          enabled: false,
-          startTime: '22:00',
-          endTime: '08:00'
-        }
-      };
-      const updatedPreferences = { ...currentPreferences, ...preferences };
 
       const { error } = await supabase
         .from('user_settings')
         .upsert({
           user_id: user.id,
           category: SETTINGS_CATEGORIES.NOTIFICATIONS,
-          data: updatedPreferences,
+          data: { ...get().notificationPreferences, ...preferences },
           updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
-      set({ notificationPreferences: updatedPreferences, isLoading: false });
+      
+      set({
+        notificationPreferences: { ...get().notificationPreferences, ...preferences },
+        isLoading: false
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
   },
 
-  updateSecuritySettings: async (settings: Partial<SecuritySettings>) => {
+  updateSecuritySettings: async (settings: Partial<SecurityPreferencesForm>) => {
     set({ isLoading: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
-
-      const currentSettings = get().securitySettings || {
-        twoFactorEnabled: false,
-        loginNotifications: true,
-        sessionTimeout: 30,
-        ipWhitelist: [],
-        deviceTrust: false,
-        passwordExpiry: 90,
-        loginAttempts: 5,
-        accountLockout: true,
-        dataEncryption: true,
-        auditLog: true
-      };
-      const updatedSettings = { ...currentSettings, ...settings };
 
       const { error } = await supabase
         .from('user_settings')
         .upsert({
           user_id: user.id,
           category: SETTINGS_CATEGORIES.SECURITY,
-          data: updatedSettings,
+          data: { ...get().securitySettings, ...settings },
           updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
-      set({ securitySettings: updatedSettings, isLoading: false });
+      
+      set({
+        securitySettings: { ...get().securitySettings, ...settings },
+        isLoading: false
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
   },
 
-  updateDataBackupSettings: async (settings: Partial<DataBackupSettings>) => {
+  updateSecurityPreferences: async (preferences: Partial<SecurityPreferencesForm>) => {
     set({ isLoading: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User not authenticated');
 
-      const currentSettings = get().dataBackupSettings || {
-        autoBackup: true,
-        backupFrequency: 'weekly' as const,
-        backupRetention: 30,
-        includeStrategies: true,
-        includeTrades: true,
-        includeSettings: true,
-        cloudStorage: false,
-        encryptBackups: true,
-        gdprCompliance: true,
-        dataRetention: 365
-      };
-      const updatedSettings = { ...currentSettings, ...settings };
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+          user_id: user.id,
+          category: SETTINGS_CATEGORIES.SECURITY,
+          data: { ...get().securitySettings, ...preferences },
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+      
+      set({
+        securitySettings: { ...get().securitySettings, ...preferences },
+        isLoading: false
+      });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  updateDataBackupSettings: async (settings: Partial<DataBackupPreferencesForm>) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
 
       const { error } = await supabase
         .from('user_settings')
         .upsert({
           user_id: user.id,
           category: SETTINGS_CATEGORIES.DATA,
-          data: updatedSettings,
+          data: { ...get().dataBackupSettings, ...settings },
           updated_at: new Date().toISOString()
         });
 
       if (error) throw error;
-      set({ dataBackupSettings: updatedSettings, isLoading: false });
+      
+      set({
+        dataBackupSettings: { ...get().dataBackupSettings, ...settings },
+        isLoading: false
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
@@ -380,20 +386,45 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         .from('mt5_connections')
         .insert({
           user_id: user.id,
-          broker_name: connection.brokerName,
-          server: connection.server,
-          login: connection.login,
-          encrypted_password: connection.password, // In real app, encrypt this
-          account_type: connection.accountType,
-          is_active: true
+          ...connection,
+          created_at: new Date().toISOString()
         })
         .select()
         .single();
 
       if (error) throw error;
       
-      const currentConnections = get().mt5Connections;
-      set({ mt5Connections: [data, ...currentConnections], isLoading: false });
+      set({
+        mt5Connections: [...get().mt5Connections, data],
+        isLoading: false
+      });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
+  createMT5Connection: async (connection: MT5ConnectionForm) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { data, error } = await supabase
+        .from('mt5_connections')
+        .insert({
+          user_id: user.id,
+          ...connection,
+          created_at: new Date().toISOString()
+        })
+        .select()
+        .single();
+
+      if (error) throw error;
+      
+      set({
+        mt5Connections: [...get().mt5Connections, data],
+        isLoading: false
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
@@ -404,25 +435,19 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     try {
       const { data, error } = await supabase
         .from('mt5_connections')
-        .update({
-          broker_name: connection.brokerName,
-          server: connection.server,
-          login: connection.login,
-          encrypted_password: connection.password,
-          account_type: connection.accountType,
-          updated_at: new Date().toISOString()
-        })
+        .update({ ...connection, updated_at: new Date().toISOString() })
         .eq('id', id)
         .select()
         .single();
 
       if (error) throw error;
       
-      const currentConnections = get().mt5Connections;
-      const updatedConnections = currentConnections.map(conn => 
-        conn.id === id ? data : conn
-      );
-      set({ mt5Connections: updatedConnections, isLoading: false });
+      set({
+        mt5Connections: get().mt5Connections.map(conn => 
+          conn.id === id ? data : conn
+        ),
+        isLoading: false
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
@@ -438,68 +463,35 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
       if (error) throw error;
       
-      const currentConnections = get().mt5Connections;
-      const filteredConnections = currentConnections.filter(conn => conn.id !== id);
-      set({ mt5Connections: filteredConnections, isLoading: false });
+      set({
+        mt5Connections: get().mt5Connections.filter(conn => conn.id !== id),
+        isLoading: false
+      });
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
     }
   },
 
   testMT5Connection: async (connection: MT5ConnectionForm): Promise<MT5TestConnectionResponse> => {
-    try {
-      // Mock MT5 connection test - in real app, this would connect to MT5 API
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Simulate connection test
-      const isValid = connection.login && connection.password && connection.server;
-      
-      if (isValid) {
-        return {
-          success: true,
-          connected: true,
-          serverInfo: {
-            name: connection.server,
-            version: '5.0.3645',
-            ping: Math.floor(Math.random() * 100) + 20
-          }
-        };
-      } else {
-        return {
-          success: false,
-          connected: false,
-          error: 'Invalid credentials or server information'
-        };
-      }
-    } catch (error) {
-      return {
-        success: false,
-        connected: false,
-        error: (error as Error).message
-      };
-    }
-  },
-
-  // Security Actions
-  fetchLoginHistory: async () => {
     set({ isLoading: true, error: null });
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
-
-      const { data, error } = await supabase
-        .from('login_history')
-        .select('*')
-        .eq('user_id', user.id)
-        .order('login_at', { ascending: false })
-        .limit(50);
-
-      if (error) throw error;
-      set({ loginHistory: data || [], isLoading: false });
+      // Simulate connection test - in real app, this would connect to MT5 server
+      const response = await fetch('/api/mt5/test-connection', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(connection)
+      });
+      
+      const result = await response.json();
+      set({ isLoading: false });
+      return result;
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
+      throw error;
     }
   },
+
+
 
   fetchActiveSessions: async () => {
     set({ isLoading: true, error: null });
@@ -608,7 +600,7 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
   },
 
   // Data Actions
-  requestDataExport: async (exportType: ExportRequest['export_type']): Promise<ExportDataResponse> => {
+  requestDataExport: async (exportType: 'full' | 'trading_data' | 'account_info' | 'settings') => {
     set({ isLoading: true, error: null });
     try {
       const { data: { user } } = await supabase.auth.getUser();
@@ -619,33 +611,20 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         .insert({
           user_id: user.id,
           export_type: exportType,
-          status: 'pending'
+          status: 'pending',
+          created_at: new Date().toISOString()
         })
         .select()
         .single();
 
       if (error) throw error;
       
-      const currentRequests = get().exportRequests;
-      set({ 
-        exportRequests: [data, ...currentRequests], 
-        isLoading: false 
+      set({
+        exportRequests: [...get().exportRequests, data],
+        isLoading: false
       });
-      
-      return {
-        success: true,
-        exportId: data.id,
-        estimatedTime: 300, // 5 minutes
-        message: 'Export request submitted successfully'
-      };
     } catch (error) {
       set({ error: (error as Error).message, isLoading: false });
-      return {
-        success: false,
-        exportId: '',
-        estimatedTime: 0,
-        message: (error as Error).message
-      };
     }
   },
 
@@ -711,7 +690,6 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
         securitySettings: null,
         dataBackupSettings: null,
         mt5Connections: [],
-        loginHistory: [],
         activeSessions: [],
         backupCodes: [],
         exportRequests: [],
@@ -722,22 +700,49 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
     }
   },
 
+  updateDataBackupPreferences: async (preferences: Partial<DataBackupPreferencesForm>) => {
+    set({ isLoading: true, error: null });
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
+
+      const { error } = await supabase
+        .from('user_settings')
+        .upsert({
+          user_id: user.id,
+          category: SETTINGS_CATEGORIES.DATA_BACKUP,
+          data: { ...get().dataBackupSettings, ...preferences },
+          updated_at: new Date().toISOString()
+        });
+
+      if (error) throw error;
+      
+      set({
+        dataBackupSettings: { ...get().dataBackupSettings, ...preferences },
+        isLoading: false
+      });
+    } catch (error) {
+      set({ error: (error as Error).message, isLoading: false });
+    }
+  },
+
   // Utility Actions
   clearError: () => set({ error: null }),
   
-  resetSettings: () => set({
-    userProfile: null,
-    tradingPreferences: null,
-    uiCustomization: null,
-    notificationPreferences: null,
-    securitySettings: null,
-    dataBackupSettings: null,
-    mt5Connections: [],
-    loginHistory: [],
-    activeSessions: [],
-    backupCodes: [],
-    exportRequests: [],
-    isLoading: false,
-    error: null
-  })
+  resetSettings: () => {
+    set({
+      userProfile: null,
+      tradingPreferences: null,
+      uiCustomization: null,
+      notificationPreferences: null,
+      securitySettings: null,
+      dataBackupSettings: null,
+      mt5Connections: [],
+      activeSessions: [],
+      backupCodes: [],
+      exportRequests: [],
+      isLoading: false,
+      error: null
+    });
+  }
 }));

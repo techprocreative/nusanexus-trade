@@ -508,7 +508,10 @@ export function useMobileData() {
     isOnline,
     syncQueueLength,
     storageQuota,
-    dataManager: mobileDataManager
+    dataManager: mobileDataManager,
+    cacheData: (key: string, data: any, priority?: 'low' | 'medium' | 'high') => 
+      mobileDataManager.set(key, data, { priority }),
+    getCachedData: (key: string) => mobileDataManager.get(key)
   };
 }
 

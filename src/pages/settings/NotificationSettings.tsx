@@ -117,27 +117,27 @@ const NotificationSettings: React.FC = () => {
     
     try {
       await updateNotificationPreferences({
-        email_enabled: notificationForm.emailEnabled,
-        push_enabled: notificationForm.pushEnabled,
-        sms_enabled: notificationForm.smsEnabled,
-        sound_enabled: notificationForm.soundEnabled,
-        trade_executions: notificationForm.tradeExecutions,
-        price_alerts: notificationForm.priceAlerts,
-        news_alerts: notificationForm.newsAlerts,
-        system_alerts: notificationForm.systemAlerts,
-        market_open: notificationForm.marketOpen,
-        market_close: notificationForm.marketClose,
-        daily_summary: notificationForm.dailySummary,
-        weekly_report: notificationForm.weeklyReport,
-        monthly_report: notificationForm.monthlyReport,
-        profit_loss_alerts: notificationForm.profitLossAlerts,
-        margin_call_alerts: notificationForm.marginCallAlerts,
-        connection_alerts: notificationForm.connectionAlerts,
+        emailEnabled: notificationForm.emailEnabled,
+        pushEnabled: notificationForm.pushEnabled,
+        smsEnabled: notificationForm.smsEnabled,
+        soundEnabled: notificationForm.soundEnabled,
+        tradeExecutions: notificationForm.tradeExecutions,
+        priceAlerts: notificationForm.priceAlerts,
+        newsAlerts: notificationForm.newsAlerts,
+        systemAlerts: notificationForm.systemAlerts,
+        marketOpen: notificationForm.marketOpen,
+        marketClose: notificationForm.marketClose,
+        dailySummary: notificationForm.dailySummary,
+        weeklyReport: notificationForm.weeklyReport,
+        monthlyReport: notificationForm.monthlyReport,
+        profitLossAlerts: notificationForm.profitLossAlerts,
+        marginCallAlerts: notificationForm.marginCallAlerts,
+        connectionAlerts: notificationForm.connectionAlerts,
         frequency: notificationForm.frequency,
-        quiet_hours_enabled: notificationForm.quietHoursEnabled,
-        quiet_hours_start: notificationForm.quietHoursStart,
-        quiet_hours_end: notificationForm.quietHoursEnd,
-        weekend_notifications: notificationForm.weekendNotifications
+        quietHoursEnabled: notificationForm.quietHoursEnabled,
+        quietHoursStart: notificationForm.quietHoursStart,
+        quietHoursEnd: notificationForm.quietHoursEnd,
+        weekendNotifications: notificationForm.weekendNotifications
       });
       toast.success('Notification preferences updated successfully');
       setHasChanges(false);

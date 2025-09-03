@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { TrendingUp, TrendingDown, DollarSign, Activity, Target, Zap } from 'lucide-react';
+import { TrendingUp, TrendingDown, DollarSign, Activity, Zap } from 'lucide-react';
 import { AccountBalance, QuickStats } from '../../types';
 
 interface AccountOverviewProps {

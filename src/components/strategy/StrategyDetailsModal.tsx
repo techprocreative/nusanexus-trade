@@ -101,7 +101,7 @@ export const StrategyDetailsModal: React.FC<StrategyDetailsModalProps> = () => {
     const { loadStrategyAsTemplate } = useStrategyBuilderStore.getState();
     
     // Load strategy as template in the builder store
-    loadStrategyAsTemplate(strategy);
+    loadStrategyAsTemplate(strategy.id);
     
     // Close modal and navigate to strategy builder
     closeStrategyModal();
@@ -395,13 +395,13 @@ export const StrategyDetailsModal: React.FC<StrategyDetailsModalProps> = () => {
                           <div className="flex justify-between">
                             <span className="text-slate-600 dark:text-slate-400">Best Trade</span>
                             <span className="font-semibold text-green-600 dark:text-green-400">
-                              {strategy.performanceMetrics?.bestTrade ? formatPercentage(strategy.performanceMetrics.bestTrade) : 'N/A'}
+                              {strategy.performanceMetrics?.bestTrade ? formatPercentage(strategy.performanceMetrics.bestTrade.pnlPercentage) : 'N/A'}
                             </span>
                           </div>
                           <div className="flex justify-between">
                             <span className="text-slate-600 dark:text-slate-400">Worst Trade</span>
                             <span className="font-semibold text-red-600 dark:text-red-400">
-                              {strategy.performanceMetrics?.worstTrade ? formatPercentage(strategy.performanceMetrics.worstTrade) : 'N/A'}
+                              {strategy.performanceMetrics?.worstTrade ? formatPercentage(strategy.performanceMetrics.worstTrade.pnlPercentage) : 'N/A'}
                             </span>
                           </div>
                         </CardContent>
@@ -464,7 +464,11 @@ export const StrategyDetailsModal: React.FC<StrategyDetailsModalProps> = () => {
                           <XAxis dataKey="month" />
                           <YAxis />
                           <Tooltip />
-                          <Bar dataKey="return" fill={(entry) => entry >= 0 ? '#10b981' : '#ef4444'} />
+                          <Bar dataKey="return">
+                            {monthlyReturnsData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.return >= 0 ? '#10b981' : '#ef4444'} />
+                            ))}
+                          </Bar>
                         </BarChart>
                       </ResponsiveContainer>
                     </div>

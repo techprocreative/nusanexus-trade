@@ -20,7 +20,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 10,
         min: 1,
         max: 200,
-        validation: { min: 1, max: 200 }
+
       },
       {
         name: 'slowPeriod',
@@ -31,7 +31,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 20,
         min: 1,
         max: 200,
-        validation: { min: 1, max: 200 }
+
       },
       {
         name: 'maType',
@@ -48,10 +48,7 @@ export const componentLibrary: ComponentDefinition[] = [
       }
     ],
     inputs: [],
-    outputs: ['signal'],
-    validation: {
-      maxConnections: 1
-    }
+    outputs: ['signal']
   },
   {
     id: 'rsi-level',
@@ -71,7 +68,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 14,
         min: 2,
         max: 100,
-        validation: { min: 2, max: 100 }
+
       },
       {
         name: 'overbought',
@@ -82,7 +79,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 70,
         min: 50,
         max: 95,
-        validation: { min: 50, max: 95 }
+
       },
       {
         name: 'oversold',
@@ -93,14 +90,11 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 30,
         min: 5,
         max: 50,
-        validation: { min: 5, max: 50 }
+
       }
     ],
     inputs: [],
-    outputs: ['signal'],
-    validation: {
-      maxConnections: 1
-    }
+    outputs: ['signal']
   },
   {
     id: 'price-level',
@@ -118,7 +112,7 @@ export const componentLibrary: ComponentDefinition[] = [
         description: 'Target price level',
         required: true,
         defaultValue: 0,
-        validation: { min: 0 }
+
       },
       {
         name: 'direction',
@@ -155,7 +149,7 @@ export const componentLibrary: ComponentDefinition[] = [
         min: 1.1,
         max: 10,
         step: 0.1,
-        validation: { min: 1.1, max: 10 }
+
       },
       {
         name: 'lookback',
@@ -166,7 +160,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 20,
         min: 5,
         max: 100,
-        validation: { min: 5, max: 100 }
+
       }
     ],
     inputs: [],
@@ -204,14 +198,11 @@ export const componentLibrary: ComponentDefinition[] = [
         required: true,
         defaultValue: 2,
         min: 0.1,
-        validation: { min: 0.1 }
+
       }
     ],
     inputs: ['entry'],
-    outputs: ['exit'],
-    validation: {
-      requiredInputs: ['entry']
-    }
+    outputs: ['exit']
   },
   {
     id: 'stop-loss',
@@ -244,14 +235,11 @@ export const componentLibrary: ComponentDefinition[] = [
         required: true,
         defaultValue: 1,
         min: 0.1,
-        validation: { min: 0.1 }
+
       }
     ],
     inputs: ['entry'],
-    outputs: ['exit'],
-    validation: {
-      requiredInputs: ['entry']
-    }
+    outputs: ['exit']
   },
   {
     id: 'position-size',
@@ -284,14 +272,12 @@ export const componentLibrary: ComponentDefinition[] = [
         required: true,
         defaultValue: 1000,
         min: 0.01,
-        validation: { min: 0.01 }
+
       }
     ],
     inputs: ['signal'],
     outputs: ['size'],
-    validation: {
-      requiredInputs: ['signal']
-    }
+
   },
   {
     id: 'risk-reward',
@@ -312,14 +298,12 @@ export const componentLibrary: ComponentDefinition[] = [
         min: 0.5,
         max: 10,
         step: 0.1,
-        validation: { min: 0.5, max: 10 }
+
       }
     ],
     inputs: ['entry', 'takeProfit', 'stopLoss'],
     outputs: ['filter'],
-    validation: {
-      requiredInputs: ['entry', 'takeProfit', 'stopLoss']
-    }
+
   },
 
   // Time Filters
@@ -339,9 +323,7 @@ export const componentLibrary: ComponentDefinition[] = [
         description: 'Trading start time (HH:MM)',
         required: true,
         defaultValue: '09:30',
-        validation: {
-          pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
-        }
+
       },
       {
         name: 'endTime',
@@ -350,9 +332,7 @@ export const componentLibrary: ComponentDefinition[] = [
         description: 'Trading end time (HH:MM)',
         required: true,
         defaultValue: '16:00',
-        validation: {
-          pattern: '^([0-1]?[0-9]|2[0-3]):[0-5][0-9]$'
-        }
+
       },
       {
         name: 'timezone',
@@ -370,10 +350,7 @@ export const componentLibrary: ComponentDefinition[] = [
       }
     ],
     inputs: ['signal'],
-    outputs: ['filtered'],
-    validation: {
-      requiredInputs: ['signal']
-    }
+    outputs: ['filtered']
   },
   {
     id: 'day-filter',
@@ -449,7 +426,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 20,
         min: 5,
         max: 100,
-        validation: { min: 5, max: 100 }
+
       },
       {
         name: 'deviation',
@@ -461,7 +438,7 @@ export const componentLibrary: ComponentDefinition[] = [
         min: 0.5,
         max: 5,
         step: 0.1,
-        validation: { min: 0.5, max: 5 }
+
       }
     ],
     inputs: [],
@@ -485,7 +462,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 12,
         min: 1,
         max: 50,
-        validation: { min: 1, max: 50 }
+
       },
       {
         name: 'slowPeriod',
@@ -496,7 +473,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 26,
         min: 1,
         max: 100,
-        validation: { min: 1, max: 100 }
+
       },
       {
         name: 'signalPeriod',
@@ -507,7 +484,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 9,
         min: 1,
         max: 50,
-        validation: { min: 1, max: 50 }
+
       }
     ],
     inputs: [],
@@ -531,7 +508,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 14,
         min: 1,
         max: 100,
-        validation: { min: 1, max: 100 }
+
       },
       {
         name: 'dPeriod',
@@ -542,7 +519,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 3,
         min: 1,
         max: 20,
-        validation: { min: 1, max: 20 }
+
       },
       {
         name: 'smooth',
@@ -553,7 +530,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 3,
         min: 1,
         max: 10,
-        validation: { min: 1, max: 10 }
+
       }
     ],
     inputs: [],
@@ -577,7 +554,7 @@ export const componentLibrary: ComponentDefinition[] = [
         defaultValue: 20,
         min: 5,
         max: 100,
-        validation: { min: 5, max: 100 }
+
       }
     ],
     inputs: [],

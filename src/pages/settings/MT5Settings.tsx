@@ -82,7 +82,7 @@ const MT5Settings: React.FC = () => {
       server: connection.server,
       login: connection.login,
       password: '', // Don't populate password for security
-      accountType: connection.account_type,
+      accountType: connection.accountType,
       isDefault: connection.is_default
     });
     setEditingConnection(connection);
@@ -100,7 +100,7 @@ const MT5Settings: React.FC = () => {
           server: connectionForm.server,
           login: connectionForm.login,
           password: connectionForm.password || undefined,
-          account_type: connectionForm.accountType,
+          accountType: connectionForm.accountType,
           is_default: connectionForm.isDefault
         });
         toast.success('MT5 connection updated successfully');
@@ -111,7 +111,7 @@ const MT5Settings: React.FC = () => {
           server: connectionForm.server,
           login: connectionForm.login,
           password: connectionForm.password,
-          account_type: connectionForm.accountType,
+          accountType: connectionForm.accountType,
           is_default: connectionForm.isDefault
         });
         toast.success('MT5 connection created successfully');
@@ -138,7 +138,22 @@ const MT5Settings: React.FC = () => {
   const handleTestConnection = async (connectionId: string) => {
     setTestingConnection(connectionId);
     try {
-      const result = await testMT5Connection(connectionId);
+      const connection = mt5Connections.find(conn => conn.id === connectionId);
+      if (!connection) {
+        toast.error('Connection not found');
+        return;
+      }
+      
+      const result = await testMT5Connection({
+        name: connection.name,
+        broker: connection.broker,
+        server: connection.server,
+        login: connection.login,
+        password: '', // Password not stored for security
+        accountType: connection.accountType || 'demo',
+        isDefault: connection.is_default
+      });
+      
       if (result.success) {
         toast.success('Connection test successful');
       } else {
@@ -404,11 +419,11 @@ const MT5Settings: React.FC = () => {
                     )}
                     <span className={cn(
                       'px-2 py-1 text-xs font-medium rounded-full',
-                      connection.account_type === 'live'
+                      connection.accountType === 'live'
                         ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
                         : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
                     )}>
-                      {connection.account_type === 'live' ? 'Live' : 'Demo'}
+                      {connection.accountType === 'live' ? 'Live' : 'Demo'}
                     </span>
                   </div>
                   
@@ -436,9 +451,9 @@ const MT5Settings: React.FC = () => {
                     </div>
                   </div>
                   
-                  {connection.last_connected && (
+                  {connection.last_connected_at && (
                     <div className="mt-3 text-sm text-gray-500 dark:text-gray-400">
-                      Last connected: {new Date(connection.last_connected).toLocaleString()}
+                      Last connected: {new Date(connection.last_connected_at).toLocaleString()}
                     </div>
                   )}
                 </div>

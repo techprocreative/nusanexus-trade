@@ -13,6 +13,8 @@ interface ChartDataPoint {
   low?: number;
   open?: number;
   close?: number;
+  priceChange?: number;
+  formattedTime?: string;
 }
 
 interface OptimizedTradingChartProps {

@@ -1,12 +1,18 @@
 import React from 'react';
-import { Volume2, VolumeX, Settings } from 'lucide-react';
+import { Volume2, Settings } from 'lucide-react';
 import { cn } from '../utils/cn';
+
+interface AudioAlertSetting {
+  enabled: boolean;
+  volume: number;
+  alerts: Record<string, boolean>;
+}
 
 interface AudioAlertSettingsProps {
   isVisible: boolean;
   onClose: () => void;
-  settings: any;
-  onUpdateSetting: (key: string, value: any) => void;
+  settings: AudioAlertSetting;
+  onUpdateSetting: (key: string, value: string | number | boolean) => void;
   onUpdateAlertSetting: (alertType: string, enabled: boolean) => void;
   onToggleAllAlerts: (enabled: boolean) => void;
 }
